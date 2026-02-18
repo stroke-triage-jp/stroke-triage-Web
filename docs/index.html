@@ -787,7 +787,8 @@ function clearHistory(){
   renderHistory();
 }
 function resetAll(){
-  
+  current = 0; // ← 保険（必ず基本情報へ）
+
   // 初期化（新規評価）
   state = {
     sex: "男", lkw:null, disc:null, dementia:null, anti:null, antiName:"", past:new Set(), pastOther:"",
@@ -798,25 +799,34 @@ function resetAll(){
     elvo:{gaze:null, naming:null, fingers:null},
     kpss:{ arousal:null, question:null, ur:null, ul:null, lr:null, ll:null, lang:null }
   };
+
   // 入力欄クリア
-  ["patientID","age","elapsed","jcs","gcsE","gcsV","gcsM","bpSys","bpDia","spo2","oxygenFlow","oxygenPercent","hr","bs","bt","pupilR","pupilL","antiName","pastOther","out","lkw","disc","kpssTotal"].forEach(id=>{ set(id,""); });
+  ["patientID","age","elapsed","jcs","gcsE","gcsV","gcsM","bpSys","bpDia","spo2","oxygenFlow","oxygenPercent","hr","bs","bt","pupilR","pupilL","antiName","pastOther","out","lkw","disc","kpssTotal"]
+    .forEach(id=>{ set(id,""); });
+
   // 選択UIのonクラスを除去
   document.querySelectorAll('.pill.on, .seg button.on').forEach(el=>el.classList.remove('on'));
+
+  // サブUIを初期表示へ（必要なものだけ）
+  document.getElementById('antiNameWrap').style.display = 'none';
+  document.getElementById('irregularRow').style.display = 'none';
+  document.getElementById('faceSideWrap').style.display = 'none';
+  document.getElementById('armSideWrap').style.display = 'none';
+
   updateAll();
 
-// ---- トップへ戻る ----
-
-
-document.getElementById('app').classList.add('hidden');
-document.getElementById('intro').classList.remove('hidden');
-document.getElementById('bottomBar').style.display = 'none';
-
-window.scrollTo({ top: 0, behavior: 'smooth' });
+  // ---- トップへ戻る ----
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('intro').classList.remove('hidden');
+  document.getElementById('bottomBar').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
-/* ----- 起動 ----- */
+  
+  /* ----- 起動 ----- */
 init();
 renderHistory();
+
+
 </script>
 </body>
 </html>
