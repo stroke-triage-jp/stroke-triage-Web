@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Stroke Triage (Web Mini)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: -apple-system, system-ui, sans-serif; margin: 16px; }
+    input, select, textarea { width: 100%; padding: 8px; margin: 6px 0; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+    button { padding: 10px 14px; border: 0; border-radius: 8px; background: #0a84ff; color: #fff; }
+  </style>
+</head>
+<body>
+  <h1>Stroke Triage (Web Mini)</h1>
+
+  <div class="card">
+    <h3>基本</h3>
+    <label>ID <input id="patientID" placeholder="例: 123456"></label>
+    <label>年齢 <input id="age" placeholder="例: 56"></label>
+    <label>性別
+      <select id="sex">
+        <option>男</option>
+        <option>女</option>
+      </select>
+    </label>
+    <label>最終健在 <input id="lkw" type="datetime-local"></label>
+    <label>発見・発症 <input id="disc" type="datetime-local"></label>
+  </div>
+
+  <div class="card">
+    <h3>CPSS</h3>
+    <label>顔面
+      <select id="cpssFace">
+        <option value="">—</option>
+        <option value="0">正常</option>
+        <option value="1">異常</option>
+      </select>
+    </label>
+    <label>上肢
+      <select id="cpssArm">
+        <option value="">—</option>
+        <option value="0">正常</option>
+        <option value="1">異常</option>
+      </select>
+    </label>
+    <label>言語
+      <select id="cpssSpeech">
+        <option value="">—</option>
+        <option value="0">正常</option>
+        <option value="1">異常</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="card">
+    <h3>KPSS</h3>
+    <label>意識水準
+      <select id="kpssArousal">
+        <option value="">—</option>
+        <option value="0">0</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+      </select>
+    </label>
+    <label>質問
+      <select id="kpssQ">
+        <option value="">—</option>
+        <option value="0">0</option>
+        <option value="1">1</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="card">
+    <button onclick="generate()">サマリ生成</button>
+    <textarea id="out" rows="10" placeholder="ここにサマリが出ます"></textarea>
+  </div>
+
+<script>
+function fmtElapsed(lkw, disc) {
+  if (!lkw || !disc) return "—";
+  const min = Math.round((disc - lkw)/60000);
+  const a = Math.abs(min);
+  const h = Math.floor(a/60), m = a%60;
+  return h>0 ? `${h}時間${m}分` : `${m}分`;
+}
+function cpssJudge(f,a,s) {
+  if (f==="" && a==="" && s==="") return "未入力";
+  if (f==="" || a==="" || s==="") return "一部未入力";
+  return (f==="1" || a==="1" || s==="1") ? "陽性" : "陰性";
+}
+function kpssScore(vals) {
+  if (vals.some(v => v==="")) return "—";
+  return vals.map(v=>parseInt(v,10)).reduce((x,y)=>x+y,0);
+}
+function generate() {
+  const id = document.getElementById('patientID').value.trim() || "—";
+  const age = document.getElementById('age').value.trim() || "—";
+  const sex = document.getElementById('sex').value;
+  const lkwStr = document.getElementById('lkw').value;
+  const discStr = document.getElementById('disc').value;
+  const lkw = lkwStr ? new Date(lkwStr) : null;
+  const disc = discStr ? new Date(discStr) : null;
+
+  const f = document.getElementById('cpssFace').value;
+  const a = document.getElementById('cpssArm').value;
+  const s = document.getElementById('cpssSpeech').value;
+
+  const ar = document.getElementById('kpssArousal').value;
+  const q  = document.getElementById('kpssQ').value;
+
+  const summary = [
+    "脳卒中対応記録",
+    "",
+    `ID: ${id}`,
+    `年齢: ${age}　性別: ${sex}`,
+    `最終健在: ${lkw ? lkw.toLocaleString() : "不明"}`,
+    `発見・発症: ${disc ? disc.toLocaleString() : "不明"}`,
+    `経過: ${fmtElapsed(lkw, disc)}`,
+    "",
+    `CPSS: ${cpssJudge(f,a,s)}`,
+    `・顔面: ${f==="" ? "—" : (f==="0"?"正常":"異常")}`,
+    `・上肢: ${a==="" ? "—" : (a==="0"?"正常":"異常")}`,
+    `・言語: ${s==="" ? "—" : (s==="0"?"正常":"異常")}`,
+    "",
+    `KPSS: 合計 ${kpssScore([ar,q])}`
+  ].join("\n");
+
+  document.getElementById('out').value = summary;
+}
+</script>
+</body>
+</html>
