@@ -1,178 +1,417 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Stroke Triage (Web)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    :root{
-      --bg:#f5f6f7;--card:#fff;--border:rgba(0,0,0,0.10);--shadow:0 1px 2px rgba(0,0,0,0.06);
-      --text:#111;--muted:#6b7280;--accent:#0a84ff;--ok:#16a34a;--warn:#f59e0b;--bad:#dc2626;
-      --accent-bg: rgba(10,132,255,0.12);
-      --accent-border: rgba(10,132,255,0.4);
-    }
-    body{font-family:-apple-system,system-ui,sans-serif;margin:0;color:var(--text);background:var(--bg);}
-    .container{max-width:960px;margin:0 auto;padding:14px;}
-    h1{font-size:22px;margin:8px 0 12px;text-align:center;}
-    /* ステップヘッダー */
-    .steps{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:6px 0 12px;}
-    .step{padding:8px 12px;border-radius:999px;background:#fff;border:1px solid var(--border);cursor:pointer;font-weight:600;font-size:14px;transition:transform .08s ease;}
-    .step.on{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border)}
-    .step:active{transform:translateY(1px)}
-    /* セクション/カード */
-    .section{margin-bottom:14px;}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);}
-    .card h3{margin:0 0 10px;font-size:16px;display:flex;align-items:center;gap:8px;}
-    .row{display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center;margin:10px 0;}
-    label{font-size:13px;color:#333;}
-    /* 入力 */
-    input,select,textarea{
-      width:100%;padding:14px 14px;border:1px solid var(--border);border-radius:10px;background:#fff;box-sizing:border-box;font-size:16px;
-    }
-    input:focus, select:focus, textarea:focus{
-      outline:none;border-color:var(--accent-border);box-shadow:0 0 0 3px rgba(10,132,255,0.12);
-    }
-    textarea{font-family:-apple-system,system-ui,sans-serif}
-    /* ピル/セグメント */
-    .pill{display:inline-block;padding:12px 14px;border-radius:14px;border:1px solid var(--border);cursor:pointer;user-select:none;font-size:15px;transition:transform .08s ease;}
-    .pill.on{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border)}
-    .pill:active{transform:translateY(1px)}
-    .pill-group{display:flex;flex-wrap:wrap;gap:8px;}
-    .seg{display:inline-grid;grid-auto-flow:column;gap:8px}
-    .seg button{padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;font-size:15px;transition:transform .08s ease;}
-    .seg button.on{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border)}
-    .seg button:active{transform:translateY(1px)}
-    /* バッジ */
-    .badge{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted);}
-    .ok{color:var(--ok);border-color:rgba(22,163,74,0.4);background:rgba(22,163,74,0.08)}
-    .warn{color:var(--warn);border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.08)}
-    .bad{color:var(--bad);border-color:rgba(220,38,38,0.4);background:rgba(220,38,38,0.08)}
-    /* 2列グリッド/ツールバー/ボタン */
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .toolbar{
-      position:sticky;bottom:0;background:rgba(245,246,247,0.92);backdrop-filter:saturate(180%) blur(10px);
-      padding:10px 0;border-top:1px solid rgba(0,0,0,0.06)
-    }
-    .btn{padding:14px 16px;border:0;border-radius:12px;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;font-size:16px;transition:transform .08s ease;}
-    .btn.secondary{background:#fff;color:#111;border:1px solid var(--border)}
-    .btn:active{transform:translateY(1px)}
-    .hint{font-size:12px;color:var(--muted)}
-    @media(max-width:640px){.row{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}}
-    /* トースト */
-    #toast{
-      position:fixed;left:50%;bottom:90px;transform:translateX(-50%);
-      background:rgba(0,0,0,0.85);color:#fff;padding:10px 14px;border-radius:12px;
-      opacity:0;pointer-events:none;transition:opacity .25s;z-index:9999;font-size:14px;
-    }
-  </style>
+<meta charset="utf-8">
+<title>Stroke Triage (Web)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --bg:#f5f6f7;--card:#fff;--border:rgba(0,0,0,0.10);--shadow:0 1px 2px rgba(0,0,0,0.06);
+  --text:#111;--muted:#6b7280;--accent:#0a84ff;--ok:#16a34a;--warn:#f59e0b;--bad:#dc2626;
+  --fill:rgba(120,120,128,0.12);
+}
+html,body{height:100%}
+body{font-family:-apple-system,system-ui,"Hiragino Sans",sans-serif;margin:0;color:var(--text);background:var(--bg);}
+.container{max-width:960px;margin:0 auto;padding:14px;}
+h1{font-size:22px;margin:8px 0 12px;text-align:center;}
+/* タブ（ステップヘッダ） */
+.steps{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:6px 0 12px;}
+.step{padding:8px 12px;border-radius:999px;background:var(--fill);border:1px solid rgba(0,0,0,0.08);cursor:pointer;font-size:13px;}
+.step.on{background:rgba(10,132,255,0.18);color:var(--accent);border-color:rgba(10,132,255,0.4);font-weight:600;}
+/* セクションカード */
+.section{margin-bottom:14px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:var(--shadow);}
+.card h3{margin:0 0 10px;font-size:16px;display:flex;align-items:center;gap:8px;}
+.badge{font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted);}
+.badge.ok{color:#0a7a35;border-color:rgba(22,163,74,0.5);background:rgba(22,163,74,0.10)}
+.badge.warn{color:#aa7200;border-color:rgba(245,158,11,0.5);background:rgba(245,158,11,0.10)}
+.badge.bad{color:#a31212;border-color:rgba(220,38,38,0.5);background:rgba(220,38,38,0.10)}
+/* 入力 */
+.row{display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center;margin:8px 0;}
+.row-inline{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+label{font-size:13px;color:#333;}
+input,select,textarea{
+  width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;box-sizing:border-box;font-size:16px;
+}
+textarea{font-family:-apple-system,system-ui,sans-serif}
+input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(10,132,255,0.4);box-shadow:0 0 0 3px rgba(10,132,255,0.12)}
+.pill{display:inline-block;padding:10px 12px;border-radius:12px;border:1px solid var(--border);cursor:pointer;user-select:none;font-size:15px;background:#fff}
+.pill.on{background:rgba(10,132,255,0.15);color:var(--accent);border-color:rgba(10,132,255,0.4);font-weight:600}
+.pill.full{display:block;width:100%;text-align:left}
+.pill-group{display:flex;flex-wrap:wrap;gap:8px}
+.seg{display:inline-grid;grid-auto-flow:column;gap:8px}
+.seg button{padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;font-size:15px;}
+.seg button.on{background:rgba(10,132,255,0.15);color:var(--accent);border-color:rgba(10,132,255,0.4);font-weight:600}
+.hint{font-size:12px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.toolbar{position:sticky;bottom:0;background:rgba(250,250,252,0.96);backdrop-filter:saturate(180%) blur(14px);
+  padding:10px 0;border-top:1px solid rgba(0,0,0,0.08)}
+.btn{padding:12px 14px;border:0;border-radius:12px;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;font-size:16px;}
+.btn.secondary{background:#fff;color:#111;border:1px solid var(--border)}
+.small{font-size:12px;color:var(--muted)}
+@media(max-width:640px){.row{grid-template-columns:1fr}}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:10px 14px;border-radius:12px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:9999;font-size:14px;}
+.list{border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.list .item{padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:flex-start}
+.list .item:first-child{border-top:none}
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>Stroke Triage</h1>
 
-    <!-- ステップヘッダー（アプリのタブ風） -->
-    <div class="steps" id="steps"></div>
+<div class="container" id="intro">
+  <h1>Stroke Triage</h1>
+  <div class="card">
+    <h3>本アプリについて（テスト運用版）</h3>
+    <p class="small" style="line-height:1.6">
+      本アプリは、脳卒中初期対応における評価・記録・共有を補助するためのツールです。実地での使用感や入力性、共有文面の妥当性の確認を目的としてテスト運用しています。
+    </p>
+    <h3>ご利用にあたって</h3>
+    <p class="small" style="line-height:1.6;white-space:pre-line">
+・本アプリは医療判断の代替ではありません。院内手順・ガイドラインに従ってください。
+・緊急時は入力を待たずに患者対応と必要な連絡を優先してください。
+・入力値（時刻・スコア等）は可能な範囲で根拠を確認してください。
+・個人情報の取り扱いに注意してください（端末管理・共有先・スクリーンショット等）。
+    </p>
+    <h3>免責事項</h3>
+    <p class="small" style="line-height:1.6">
+      本アプリの利用により生じたいかなる損害についても、作成者は責任を負いません。表示内容は正確性・完全性を保証するものではなく、ユーザの自己責任において利用してください。
+    </p>
+  </div>
 
-    <!-- Overview -->
-    <div class="section" data-step="overview">
-      <div class="card">
-        <h3>基本情報 <span id="basicState" class="badge">未入力</span></h3>
-        <div class="row"><label>ID</label><input id="patientID" placeholder="例: 123456"></div>
-        <div class="row"><label>年齢</label><input id="age" inputmode="numeric" placeholder="例: 56"></div>
-        <div class="row"><label>性別</label>
-          <select id="sex"><option>男</option><option>女</option></select>
+  <div style="margin-top:10px" class="grid2">
+    <button class="btn" onclick="startEval()">同意して評価開始</button>
+  </div>
+
+  <div style="margin-top:14px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <h3 style="margin:0">履歴</h3>
+      <div style="flex:1"></div>
+      <button class="btn secondary" onclick="clearHistory()" id="clearBtn" style="display:none">全削除</button>
+    </div>
+    <div class="small">※トップ画面では最新10件までを表示します。</div>
+    <div id="historyEmpty" class="small" style="margin-top:4px">履歴はまだありません</div>
+    <div id="historyList" class="list" style="display:none;margin-top:6px"></div>
+  </div>
+</div>
+
+<div class="container" id="app" style="display:none">
+  <h1>Stroke Triage</h1>
+  <div class="steps" id="steps"></div>
+
+  <!-- 基本情報 -->
+  <div class="section" data-step="overview">
+    <div class="card">
+      <h3>基本情報</h3>
+
+      <div class="row">
+        <label>ID</label>
+        <input id="patientID" placeholder="例：123456">
+      </div>
+
+      <div class="row">
+        <label>年齢</label>
+        <div class="row-inline">
+          <input id="age" placeholder="例：56" style="width:120px">
+          <div style="width:8px"></div>
+          <div class="seg" id="sexSeg"></div>
         </div>
-        <div class="row"><label>最終健在</label><input id="lkw" type="datetime-local"></div>
-        <div class="row"><label>発見・発症時刻</label><input id="disc" type="datetime-local"></div>
-        <div class="row"><label>経過</label><input id="elapsed" readonly placeholder="自動計算"></div>
+      </div>
 
-        <div class="card" style="margin-top:10px">
-          <h3>バイタル</h3>
-          <div class="grid2">
-            <div class="row"><label>JCS</label><input id="jcs"></div>
-            <div class="row"><label>GCS</label><input id="gcs" placeholder="E V M"></div>
-            <div class="row"><label>BP</label><input id="bp" placeholder="120/80"></div>
-            <div class="row"><label>SpO₂</label><input id="spo2" inputmode="numeric" placeholder="％"></div>
-            <div class="row"><label>HR</label><input id="hr" inputmode="numeric" placeholder="/分"></div>
-            <div class="row"><label>BS/BT</label><input id="bsbt" placeholder="BS mg/dl / BT ℃"></div>
+      <div class="row">
+        <label>経過</label>
+        <input id="elapsed" readonly placeholder="—">
+      </div>
+
+      <div class="row">
+        <label>最終健在</label>
+        <div class="row-inline" style="flex:1">
+          <button class="pill" id="lkwBtn" onclick="pickTime('lkw')"><span id="lkwText">不明</span></button>
+          <button class="pill" onclick="setUnknown('lkw')">不明</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>発見・発症時刻</label>
+        <div class="row-inline" style="flex:1">
+          <button class="pill" id="discBtn" onclick="pickTime('disc')"><span id="discText">未入力</span></button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:10px">
+        <h3>バイタル</h3>
+
+        <div class="row">
+          <label>JCS</label>
+          <input id="jcs" placeholder="—" style="width:80px">
+          <div></div>
+        </div>
+
+        <div class="row">
+          <label>GCS</label>
+          <div class="row-inline">
+            <span>E</span><input id="gcsE" placeholder="—" style="width:60px">
+            <span>V</span><input id="gcsV" placeholder="—" style="width:60px">
+            <span>M</span><input id="gcsM" placeholder="—" style="width:60px">
+          </div>
+        </div>
+
+        <div class="row">
+          <label>BP</label>
+          <div class="row-inline">
+            <input id="bpSys" placeholder="—" style="width:64px">
+            <span>/</span>
+            <input id="bpDia" placeholder="—" style="width:64px">
+            <span>mmHg</span>
+            <div style="flex:1"></div>
+            <span>SpO₂</span>
+            <input id="spo2" placeholder="—" style="width:60px">
+            <span>％</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <label>酸素</label>
+          <div class="row-inline">
+            <input id="oxygenFlow" placeholder="—" style="width:60px"><span>L</span>
+            <input id="oxygenPercent" placeholder="—" style="width:60px"><span>％</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <label>HR</label>
+          <div class="row-inline">
+            <input id="hr" placeholder="—" style="width:64px"><span>/分</span>
+            <div class="seg" id="rhythmSeg"></div>
+          </div>
+        </div>
+
+        <div class="row" id="irregularRow" style="display:none">
+          <label>不整の種類</label>
+          <div class="seg" id="irregularSeg"></div>
+        </div>
+
+        <div class="row">
+          <label>BS</label>
+          <div class="row-inline">
+            <input id="bs" placeholder="—" style="width:80px"><span>mg/dl</span>
+            <div style="flex:1"></div>
+            <span>BT</span><input id="bt" placeholder="—" style="width:64px"><span>℃</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <label>瞳孔</label>
+          <div class="row-inline">
+            <span>右</span><input id="pupilR" placeholder="—" style="width:60px"><span>mm</span>
+            <span>/ 左</span><input id="pupilL" placeholder="—" style="width:60px"><span>mm</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <label>対光反射</label>
+          <div class="row-inline">
+            <div class="seg" id="lightRSeg"></div>
+            <div class="seg" id="lightLSeg"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="row">
+        <label>認知症</label>
+        <div class="seg" id="dementiaSeg"></div>
+      </div>
+
+      <div class="row">
+        <label>抗凝固薬・抗血小板薬内服</label>
+        <div style="flex:1">
+          <div class="seg" id="antiSeg"></div>
+          <div id="antiNameWrap" style="margin-top:6px;display:none">
+            <input id="antiName" placeholder="薬品名を入力">
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- 6項目 -->
-    <div class="section" data-step="six">
-      <div class="card">
-        <h3>6項目 <span id="sixState" class="badge">未入力</span></h3>
-        <div class="pill-group" id="sixItems"></div>
-        <div class="hint">各項目「なし / あり」を選択</div>
-      </div>
-    </div>
-
-    <!-- CPSS / ELVO -->
-    <div class="section" data-step="cpss">
-      <div class="card">
-        <h3>CPSS <span id="cpssState" class="badge">未入力</span></h3>
-        <div class="row"><label>顔面</label><div class="seg" id="cpssFace"></div></div>
-        <div class="row"><label>上肢</label><div class="seg" id="cpssArm"></div></div>
-        <div class="row"><label>言語</label><div class="seg" id="cpssSpeech"></div></div>
-        <div class="row"><label>判定</label><input id="cpssJudge" readonly></div>
-      </div>
       <div class="card" style="margin-top:10px">
-        <h3>ELVO</h3>
-        <div class="row"><label>眼球位置</label><div class="seg" id="elvoGaze"></div></div>
-        <div class="row"><label>物品呼称</label><div class="seg" id="elvoNaming"></div></div>
-        <div class="row"><label>指の数</label><div class="seg" id="elvoFingers"></div></div>
+        <h3>既往歴</h3>
+        <div id="pastList"></div>
+        <div style="margin-top:8px">
+          <div class="small">その他の既往歴（自由入力）</div>
+          <textarea id="pastOther" rows="3" placeholder="例：喘息、甲状腺疾患 など"></textarea>
+        </div>
+      </div>
+
+      <div id="timeWarn" class="small" style="color:#aa7200;display:none">発見時刻が最終健在より前になっています</div>
+    </div>
+  </div>
+
+  <!-- 6項目 -->
+  <div class="section" data-step="six">
+    <div class="card">
+      <h3>6項目（チェック） <span id="sixState" class="badge">未入力</span></h3>
+      <div style="display:grid;gap:10px">
+        <div class="row-inline"><div style="width:120px">脈不整</div><span class="pill" data-six="0" data-val="0">なし</span><span class="pill" data-six="0" data-val="1">あり</span></div>
+        <div class="row-inline"><div style="width:120px">共同偏視</div><span class="pill" data-six="1" data-val="0">なし</span><span class="pill" data-six="1" data-val="1">あり</span></div>
+        <div class="row-inline"><div style="width:120px">半側空間無視</div><span class="pill" data-six="2" data-val="0">なし</span><span class="pill" data-six="2" data-val="1">あり</span></div>
+        <div class="row-inline"><div style="width:120px">失語</div><span class="pill" data-six="4" data-val="0">なし</span><span class="pill" data-six="4" data-val="1">あり</span></div>
+        <div class="row-inline"><div style="width:120px">顔面麻痺</div><span class="pill" data-six="3" data-val="0">なし</span><span class="pill" data-six="3" data-val="1">あり</span></div>
+        <div class="row-inline"><div style="width:120px">上肢麻痺</div><span class="pill" data-six="5" data-val="0">なし</span><span class="pill" data-six="5" data-val="1">あり</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CPSS/ELVO -->
+  <div class="section" data-step="cpss">
+    <div class="card">
+      <h3>CPSS <span id="cpssState" class="badge">未入力</span></h3>
+      <div style="display:grid;gap:12px">
+        <div>
+          <div class="small" style="font-weight:600">顔面の下垂</div>
+          <span class="pill full" data-cpss="face" data-val="0">正常</span>
+          <span class="pill full" data-cpss="face" data-val="1">異常</span>
+          <div id="faceSideWrap" style="margin-top:6px;display:none" class="seg">
+            <button data-side="face" data-val="右">右</button>
+            <button data-side="face" data-val="左">左</button>
+          </div>
+        </div>
+        <div>
+          <div class="small" style="font-weight:600">上肢の動揺</div>
+          <span class="pill full" data-cpss="arm" data-val="0">正常</span>
+          <span class="pill full" data-cpss="arm" data-val="1">異常</span>
+          <div id="armSideWrap" style="margin-top:6px;display:none" class="seg">
+            <button data-side="arm" data-val="右">右</button>
+            <button data-side="arm" data-val="左">左</button>
+          </div>
+        </div>
+        <div>
+          <div class="small" style="font-weight:600">言語</div>
+          <span class="pill full" data-cpss="speech" data-val="0">正常</span>
+          <span class="pill full" data-cpss="speech" data-val="1">異常</span>
+        </div>
+        <div class="row">
+          <label>判定</label>
+          <input id="cpssJudge" readonly placeholder="未入力">
+        </div>
       </div>
     </div>
 
-    <!-- KPSS -->
-    <div class="section" data-step="kpss">
-      <div class="card">
-        <h3>KPSS <span id="kpssState" class="badge">未入力</span></h3>
-        <div class="row"><label>意識水準</label><div class="seg" id="kpssArousal"></div></div>
-        <div class="row"><label>質問</label><div class="seg" id="kpssQ"></div></div>
-        <div class="row"><label>上肢 右</label><div class="seg" id="kpssUR"></div></div>
-        <div class="row"><label>上肢 左</label><div class="seg" id="kpssUL"></div></div>
-        <div class="row"><label>下肢 右</label><div class="seg" id="kpssLR"></div></div>
-        <div class="row"><label>下肢 左</label><div class="seg" id="kpssLL"></div></div>
-        <div class="row"><label>言語</label><div class="seg" id="kpssLang"></div></div>
-        <div class="row"><label>合計</label><input id="kpssTotal" readonly></div>
-      </div>
-    </div>
-
-    <!-- 共有 -->
-    <div class="section" data-step="summary">
-      <div class="card">
-        <h3>共有</h3>
-        <div class="grid2" style="margin-bottom:8px;">
-          <button class="btn" onclick="generate()">サマリ生成</button>
-          <button class="btn secondary" onclick="copyOut()">コピー</button>
+    <div class="card" style="margin-top:10px">
+      <h3>ELVO（緊急大血管閉塞）スクリーン <span id="elvoState" class="badge">未入力</span></h3>
+      <div style="display:grid;gap:12px">
+        <div>
+          <div class="small" style="font-weight:600">眼球位置</div>
+          <span class="pill full" data-elvo="gaze" data-val="0">正中</span>
+          <span class="pill full" data-elvo="gaze" data-val="1">共同偏視</span>
+          <span class="pill full" data-elvo="gaze" data-val="2">評価困難</span>
         </div>
-        <div class="row" style="grid-template-columns:1fr;">
-          <textarea id="out" rows="14" placeholder="ここにサマリが出ます"></textarea>
+        <div>
+          <div class="small" style="font-weight:600">物品呼称</div>
+          <span class="pill full" data-elvo="naming" data-val="0">できる</span>
+          <span class="pill full" data-elvo="naming" data-val="1">できない</span>
+          <span class="pill full" data-elvo="naming" data-val="2">評価困難</span>
         </div>
-        <div style="margin-top:8px;">
-          <button class="btn secondary" onclick="shareOut()">共有</button>
+        <div>
+          <div class="small" style="font-weight:600">指の数</div>
+          <span class="pill full" data-elvo="fingers" data-val="0">できる</span>
+          <span class="pill full" data-elvo="fingers" data-val="1">できない</span>
+          <span class="pill full" data-elvo="fingers" data-val="2">評価困難</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ボトムツールバー（戻る/次へ） -->
-  <div class="toolbar">
-    <div class="container">
-      <div class="grid2">
-        <button class="btn secondary" onclick="prevStep()">戻る</button>
-        <button class="btn" onclick="nextStep()">次へ</button>
+  <!-- KPSS -->
+  <div class="section" data-step="kpss">
+    <div class="card">
+      <h3>KPSS <span id="kpssState" class="badge">未入力</span></h3>
+      <div style="display:grid;gap:12px">
+        <div>
+          <div class="small" style="font-weight:600">⭕️意識水準</div>
+          <span class="pill full" data-kpss="arousal" data-val="0">０＝完全覚醒</span>
+          <span class="pill full" data-kpss="arousal" data-val="1">１＝刺激をすると覚醒する</span>
+          <span class="pill full" data-kpss="arousal" data-val="2">２＝完全に無反応</span>
+        </div>
+
+        <div>
+          <div class="small" style="font-weight:600">⭕️意識障害</div>
+          <div class="small">（患者の名前を聞く（質問））</div>
+          <span class="pill full" data-kpss="question" data-val="0">０＝正解</span>
+          <span class="pill full" data-kpss="question" data-val="1">１＝不正解</span>
+        </div>
+
+        <div>
+          <div class="small" style="font-weight:600">⭕️運動麻痺</div>
+          <div class="small">上肢麻痺</div>
+          <div class="small">（患者に目を閉じて、両手掌を下にして両腕を伸ばすように口頭、身ぶり手ぶり、パントマイムで指示）</div>
+          <div class="small">右手</div>
+          <span class="pill full" data-kpss="ur" data-val="0">０＝左右の両腕は平行に伸ばし、動かずに保持できる</span>
+          <span class="pill full" data-kpss="ur" data-val="1">１＝手を挙上するが、保持できず下垂する</span>
+          <span class="pill full" data-kpss="ur" data-val="2">２＝手を挙上することができない</span>
+          <div class="small">左手</div>
+          <span class="pill full" data-kpss="ul" data-val="0">０＝左右の両腕は平行に伸ばし、動かずに保持できる</span>
+          <span class="pill full" data-kpss="ul" data-val="1">１＝手を挙上するが、保持できず下垂する</span>
+          <span class="pill full" data-kpss="ul" data-val="2">２＝手を挙上することができない</span>
+
+          <div class="small" style="margin-top:6px">下肢麻痺</div>
+          <div class="small">（患者に目を閉じて、両下肢をベッドから挙上するように口頭、身ぶり手ぶり、パントマイムで指示）</div>
+          <div class="small">右足</div>
+          <span class="pill full" data-kpss="lr" data-val="0">０＝左右の両下肢は動揺せず保持できる</span>
+          <span class="pill full" data-kpss="lr" data-val="1">１＝下肢を挙上できるが、保持できず下垂する</span>
+          <span class="pill full" data-kpss="lr" data-val="2">２＝下肢を挙上することができない</span>
+          <div class="small">左足</div>
+          <span class="pill full" data-kpss="ll" data-val="0">０＝左右の両下肢は動揺せず保持できる</span>
+          <span class="pill full" data-kpss="ll" data-val="1">１＝下肢を挙上できるが、保持できず下垂する</span>
+          <span class="pill full" data-kpss="ll" data-val="2">２＝下肢を挙上することができない</span>
+        </div>
+
+        <div>
+          <div class="small" style="font-weight:600">⭕️言語</div>
+          <div class="small">（患者に「今日はいい天気です」を繰り返して言えるように指示）</div>
+          <span class="pill full" data-kpss="lang" data-val="0">０＝はっきりと正確に繰り返して言える</span>
+          <span class="pill full" data-kpss="lang" data-val="1">１＝言語は不明瞭（呂律が回っていない）、もしくは異常である</span>
+          <span class="pill full" data-kpss="lang" data-val="2">２＝無言。黙っている。言葉による理解がまったくできない</span>
+        </div>
+
+        <div class="row">
+          <label>合計</label>
+          <input id="kpssTotal" readonly placeholder="—">
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- トースト -->
-  <div id="toast">コピーしました</div>
+  <!-- 共有 -->
+  <div class="section" data-step="summary">
+    <div class="card">
+      <h3>共有</h3>
+      <div class="card" style="margin:8px 0">
+        <h3>Stroke Triage</h3>
+        <textarea id="out" rows="16" style="width:100%"></textarea>
+      </div>
+      <div class="grid2" style="margin-top:8px">
+        <button class="btn" onclick="resetAll()">新規評価</button>
+        <button class="btn secondary" onclick="copyOut()">コピー</button>
+      </div>
+      <div style="margin-top:8px">
+        <button class="btn" onclick="shareOut()">共有</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="container">
+    <div class="grid2">
+      <button class="btn secondary" onclick="prevStep()">戻る</button>
+      <button class="btn" onclick="nextStep()">次へ</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast">コピーしました</div>
 
 <script>
+/* ----- ナビゲーション ----- */
 const steps = [
   {id:'overview', title:'基本情報'},
   {id:'six',      title:'６項目'},
@@ -181,6 +420,13 @@ const steps = [
   {id:'summary',  title:'共有'}
 ];
 let current = 0;
+
+function startEval(){
+  document.getElementById('intro').style.display='none';
+  document.getElementById('app').style.display='block';
+  renderSteps(); updateVisible();
+}
+
 function renderSteps(){
   const c = document.getElementById('steps'); c.innerHTML='';
   steps.forEach((s,idx)=>{
@@ -191,6 +437,7 @@ function renderSteps(){
     c.appendChild(b);
   });
 }
+
 function updateVisible(scrollTop=false){
   document.querySelectorAll('[data-step]').forEach(sec=>{
     sec.style.display = (sec.getAttribute('data-step')===steps[current].id)?'block':'none';
@@ -198,147 +445,13 @@ function updateVisible(scrollTop=false){
   renderSteps();
   if (scrollTop) window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-function nextStep(){ if(current<steps.length-1){ document.activeElement && document.activeElement.blur(); current++; updateVisible(true); } }
-function prevStep(){ if(current>0){ document.activeElement && document.activeElement.blur(); current--; updateVisible(true); } }
 
-const $ = s => document.querySelector(s);
+function nextStep(){ if(current<steps.length-1){ current++; updateVisible(true); } }
+function prevStep(){ if(current>0){ current--; updateVisible(true); } }
+
+/* ----- ユーティリティ ----- */
 const v = id => document.getElementById(id).value;
 const set = (id, text) => document.getElementById(id).value = text;
-
-/* 2択/3択のセグメントUI */
-function seg2(id, on){
-  const el=document.getElementById(id); el.innerHTML='';
-  ['正常','異常'].forEach((lab,idx)=>{
-    const b=document.createElement('button'); b.textContent=lab; b.onclick=()=>{ [...el.children].forEach(c=>c.classList.remove('on')); b.classList.add('on'); on(idx); updateStates(); };
-    el.appendChild(b);
-  });
-}
-function seg3(id, on, labels=['0','1','2']){
-  const el=document.getElementById(id); el.innerHTML='';
-  labels.forEach((lab,idx)=>{
-    const b=document.createElement('button'); b.textContent=lab; b.onclick=()=>{ [...el.children].forEach(c=>c.classList.remove('on')); b.classList.add('on'); on(idx); updateStates(); };
-    el.appendChild(b);
-  });
-}
-
-/* 状態 */
-let state = {
-  lkw:null, disc:null,
-  six:[null,null,null,null,null,null],
-  cpss:{face:null,arm:null,speech:null},
-  elvo:{gaze:null,naming:null,fingers:null},
-  kpss:{arousal:null,q:null,ur:null,ul:null,lr:null,ll:null,lang:null}
-};
-
-/* ロジック */
-function fmtElapsed(lkw,disc){
-  if(!lkw||!disc) return null;
-  const min=Math.round((disc-lkw)/60000);
-  const a=Math.abs(min), h=Math.floor(a/60), m=a%60;
-  return h>0?`${h}時間${m}分`:`${m}分`;
-}
-function cpssJudge(f,a,s){
-  if(f==null&&a==null&&s==null) return '未入力';
-  if(f==null||a==null||s==null) return '一部未入力';
-  return (f===1||a===1||s===1)?'陽性':'陰性';
-}
-function kpssScore(k){
-  const vals=[k.arousal,k.q,k.ur,k.ul,k.lr,k.ll,k.lang];
-  if(vals.some(v=>v==null)) return null;
-  return vals.reduce((x,y)=>x+y,0);
-}
-
-/* ステータス更新 */
-function updateStates(){
-  const lkwStr=v('lkw'), discStr=v('disc');
-  state.lkw = lkwStr? new Date(lkwStr): null;
-  state.disc = discStr? new Date(discStr): null;
-  const elapsed=fmtElapsed(state.lkw,state.disc);
-  set('elapsed', elapsed??'—');
-
-  const basicOK = (v('age') && (state.lkw||state.disc));
-  const basicPart = (v('age')||state.lkw||state.disc);
-  const bEl=$('#basicState'); bEl.className='badge '+(basicOK?'ok':(basicPart?'warn':'bad')); bEl.textContent=basicOK?'入力済み':(basicPart?'一部未入力':'未入力');
-
-  const sixFilled=state.six.filter(x=>x!=null).length;
-  const sEl=$('#sixState'); sEl.className='badge '+(sixFilled===0?'bad':(sixFilled===6?'ok':'warn')); sEl.textContent=sixFilled===0?'未入力':(sixFilled===6?'入力済み':'一部未入力');
-
-  const cj=cpssJudge(state.cpss.face,state.cpss.arm,state.cpss.speech);
-  set('cpssJudge', cj);
-  const cEl=$('#cpssState'); cEl.className='badge '+(cj==='陽性'||cj==='陰性'?'ok':(cj==='一部未入力'?'warn':'bad')); cEl.textContent=cj;
-
-  const ks=kpssScore(state.kpss);
-  set('kpssTotal', ks==null?'—':`${ks}`);
-  const kFilled=Object.values(state.kpss).filter(x=>x!=null).length;
-  const kEl=$('#kpssState'); kEl.className='badge '+(kFilled===0?'bad':(kFilled===7?'ok':'warn')); kEl.textContent=kFilled===0?'未入力':(kFilled===7?'入力済み':'一部未入力');
-}
-
-/* サマリ生成（アプリのsummaryTextに寄せる） */
-function generate(){
-  updateStates();
-  const timeStr=d=>d? new Date(d).toLocaleString(): '不明';
-  const sixText=(i,l)=>{const x=state.six[i]; return `${l}: ${x==null?'—':(x===0?'なし':'あり')}`};
-
-  const cpssPart=[
-    `顔面: ${state.cpss.face==null?'—':(state.cpss.face===0?'正常':'異常')}`,
-    `上肢: ${state.cpss.arm==null?'—':(state.cpss.arm===0?'正常':'異常')}`,
-    `言語: ${state.cpss.speech==null?'—':(state.cpss.speech===0?'正常':'異常')}`
-  ].join(' / ');
-
-  const elvoPart=[
-    `眼球位置: ${state.elvo.gaze==null?'—':(state.elvo.gaze===0?'正中':(state.elvo.gaze===1?'共同偏視':'評価困難'))}`,
-    `物品呼称: ${state.elvo.naming==null?'—':(state.elvo.naming===0?'できる':(state.elvo.naming===1?'できない':'評価困難'))}`,
-    `指の数: ${state.elvo.fingers==null?'—':(state.elvo.fingers===0?'できる':(state.elvo.fingers===1?'できない':'評価困難'))}`
-  ].join('\n・');
-
-  const ks=kpssScore(state.kpss);
-  const kpssItems=[
-    `意識水準: ${state.kpss.arousal??'—'}`,
-    `意識障害: ${state.kpss.q??'—'}`,
-    `上肢R: ${state.kpss.ur??'—'}`,
-    `上肢L: ${state.kpss.ul??'—'}`,
-    `下肢R: ${state.kpss.lr??'—'}`,
-    `下肢L: ${state.kpss.ll??'—'}`,
-    `言語: ${state.kpss.lang??'—'}`
-  ].join(', ');
-
-  const summary = [
-    '脳卒中対応記録',
-    '',
-    `ID: ${v('patientID')||'—'}`,
-    `年齢: ${v('age')||'—'}　性別: ${v('sex')}`,
-    `最終健在: ${timeStr(state.lkw)}`,
-    `発見・発症時刻: ${timeStr(state.disc)}`,
-    `経過: ${document.getElementById('elapsed').value || '—'}`,
-    '',
-    'バイタル:',
-    `・JCS: ${v('jcs')||'—'} / GCS: ${v('gcs')||'—'}`,
-    `・BP: ${v('bp')||'—'}  SpO₂: ${v('spo2')||'—'}  HR: ${v('hr')||'—'}`,
-    `・BS/BT: ${v('bsbt')||'—'}`,
-    '',
-    '6項目:',
-    `・${sixText(0,'脈不整')}`,
-    `・${sixText(1,'共同偏視')}`,
-    `・${sixText(2,'半側空間無視')}`,
-    `・${sixText(3,'半盲')}`,
-    `・${sixText(4,'失語')}`,
-    `・${sixText(5,'片麻痺')}`,
-    '',
-    `CPSS: ${document.getElementById('cpssJudge').value}`,
-    `・${cpssPart}`,
-    '',
-    'ELVO:',
-    `・${elvoPart}`,
-    '',
-    `KPSS: 合計 ${ks==null?'—':ks}`,
-    `・${kpssItems}`
-  ].join('\n');
-
-  set('out', summary);
-  window.summaryText = summary; // 連携用
-}
-
-/* トースト（控えめ通知、文言は変更しない） */
 function showToast(message='コピーしました'){
   const t = document.getElementById('toast');
   t.textContent = message;
@@ -346,68 +459,339 @@ function showToast(message='コピーしました'){
   setTimeout(()=>{ t.style.opacity = '0'; }, 1200);
 }
 
-/* コピー/共有（挙動は維持、非対応時はコピーで代替） */
+/* ----- 状態 ----- */
+let state = {
+  // 基本
+  sex: "男",
+  lkw: null,
+  disc: null,
+  dementia: null, // "有り" | "無し" | "指摘"
+  anti: null,     // "有り" | "無し"
+  antiName: "",
+  past: new Set(),
+  // バイタル
+  jcs:"", gcsE:"", gcsV:"", gcsM:"",
+  bpSys:"", bpDia:"", spo2:"", oxygenFlow:"", oxygenPercent:"",
+  hr:"", rhythm:"SR", irregular:null, bs:"", bt:"",
+  pupilR:"", pupilL:"", lightR:null, lightL:null,
+  // 6項目
+  six:[null,null,null,null,null,null],
+  // CPSS
+  cpss:{face:null, arm:null, speech:null, faceSide:null, armSide:null},
+  // ELVO
+  elvo:{gaze:null, naming:null, fingers:null},
+  // KPSS
+  kpss:{ arousal:null, question:null, ur:null, ul:null, lr:null, ll:null, lang:null }
+};
+
+/* ----- セグメント構築 ----- */
+function seg2(el, labels, on){
+  el.innerHTML='';
+  labels.forEach((lab,idx)=>{
+    const b=document.createElement('button'); b.textContent=lab;
+    b.onclick=()=>{ [...el.children].forEach(c=>c.classList.remove('on')); b.classList.add('on'); on(idx,lab); updateAll(); };
+    el.appendChild(b);
+  });
+}
+function pills(containerSelector, attr, on){
+  document.querySelectorAll(containerSelector).forEach(p=>{
+    p.addEventListener('click', (e)=>{
+      if(e.target.classList.contains('pill')){
+        const val=e.target.getAttribute('data-val');
+        const key=e.target.getAttribute(attr);
+        on(key, val);
+        // 同一グループの選択表示
+        const parent=e.target.parentElement;
+        [...parent.querySelectorAll(`.pill[${attr}="${key}"]`)].forEach(x=>x.classList.remove('on'));
+        e.target.classList.add('on');
+      }
+    });
+  });
+}
+
+/* ----- 初期化 ----- */
+function init(){
+  // 性別
+  seg2(document.getElementById('sexSeg'), ["男","女"], (_,lab)=>{ state.sex=lab; });
+
+  // HRリズム
+  seg2(document.getElementById('rhythmSeg'), ["SR","不整"], (i,lab)=>{ state.rhythm = (i===0?"SR":"不整"); document.getElementById('irregularRow').style.display = (i===1?"grid":"none"); });
+
+  // 不整サブタイプ
+  seg2(document.getElementById('irregularSeg'), ["Af","PVC","PAC"], (_,lab)=>{ state.irregular = lab; });
+
+  // 対光反射
+  seg2(document.getElementById('lightRSeg'), ["右+","右-"], (_,lab)=>{ state.lightR = lab.endsWith("+")?"+":"-"; });
+  seg2(document.getElementById('lightLSeg'), ["左+","左-"], (_,lab)=>{ state.lightL = lab.endsWith("+")?"+":"-"; });
+
+  // 認知症
+  seg2(document.getElementById('dementiaSeg'), ["未入力","有り","無し","指摘"], (i,lab)=>{ state.dementia = (i===0?null:lab); });
+
+  // 抗凝固/抗血小板
+  seg2(document.getElementById('antiSeg'), ["未入力","有り","無し"], (i,lab)=>{
+    state.anti = (i===0?null:lab);
+    document.getElementById('antiNameWrap').style.display = (lab==="有り"?"block":"none");
+    if(lab!=="有り"){ state.antiName=""; document.getElementById('antiName').value=""; }
+  });
+  document.getElementById('antiName').addEventListener('input', e=>{ state.antiName = e.target.value; });
+
+  // 既往歴チェック
+  const pastWrap=document.getElementById('pastList');
+  const pastItems=["高血圧","不整脈","心疾患","糖尿病","脂質異常症","脳梗塞","脳出血"];
+  pastWrap.innerHTML='';
+  pastItems.forEach(lab=>{
+    const btn=document.createElement('button');
+    btn.className='pill'; btn.textContent=lab;
+    btn.onclick=()=>{ if(state.past.has(lab)){ state.past.delete(lab); btn.classList.remove('on'); } else { state.past.add(lab); btn.classList.add('on'); } updateAll(); };
+    pastWrap.appendChild(btn);
+  });
+  document.getElementById('pastOther').addEventListener('input', e=>{ state.pastOther = e.target.value; });
+
+  // 6項目
+  pills('[data-step="six"]', 'data-six', (idx, val)=>{ state.six[parseInt(idx)] = parseInt(val); });
+
+  // CPSS
+  pills('[data-step="cpss"]', 'data-cpss', (key, val)=>{
+    if(key==="face"){ state.cpss.face=parseInt(val); document.getElementById('faceSideWrap').style.display = (val==="1"?"block":"none"); if(val!=="1"){ state.cpss.faceSide=null; } }
+    if(key==="arm"){ state.cpss.arm=parseInt(val); document.getElementById('armSideWrap').style.display = (val==="1"?"block":"none"); if(val!=="1"){ state.cpss.armSide=null; } }
+    if(key==="speech"){ state.cpss.speech=parseInt(val); }
+  });
+  document.querySelectorAll('#faceSideWrap [data-side], #armSideWrap [data-side]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      const k=e.target.getAttribute('data-side');
+      const val=e.target.getAttribute('data-val');
+      [...e.target.parentElement.children].forEach(x=>x.classList.remove('on'));
+      e.target.classList.add('on');
+      if(k==="face"){ state.cpss.faceSide=val; }
+      if(k==="arm"){ state.cpss.armSide=val; }
+      updateAll();
+    });
+  });
+
+  // ELVO
+  pills('[data-step="cpss"]', 'data-elvo', (key, val)=>{
+    state.elvo[key]=parseInt(val);
+  });
+
+  // 入力イベント（基本情報/バイタル）
+  ["patientID","age","jcs","gcsE","gcsV","gcsM","bpSys","bpDia","spo2","oxygenFlow","oxygenPercent","hr","bs","bt","pupilR","pupilL"].forEach(id=>{
+    document.getElementById(id).addEventListener('input', updateAll);
+  });
+}
+
+function setUnknown(kind){
+  if(kind==='lkw'){ state.lkw=null; document.getElementById('lkwText').textContent='不明'; }
+  updateAll();
+}
+
+function pickTime(kind){
+  const val = prompt("日時を YYYY-MM-DD HH:mm 形式で入力");
+  if(!val) return;
+  const d = new Date(val.replace(/-/g,'/'));
+  if(isNaN(d.getTime())) return;
+  if(kind==='lkw'){ state.lkw=d; document.getElementById('lkwText').textContent = d.toLocaleString(); }
+  if(kind==='disc'){ state.disc=d; document.getElementById('discText').textContent = d.toLocaleString(); }
+  updateAll();
+}
+
+/* ----- ロジック ----- */
+function elapsedMinutes(lkw,disc){
+  if(!lkw||!disc) return null;
+  return Math.round((disc-lkw)/60000);
+}
+function formatElapsed(min){
+  const a=Math.abs(min), h=Math.floor(a/60), m=a%60;
+  return h>0?`${h}時間${m}分`:`${m}分`;
+}
+function cpssJudge(){
+  const f=state.cpss.face, a=state.cpss.arm, s=state.cpss.speech;
+  if(f==null&&a==null&&s==null) return '未入力';
+  if(f==null||a==null||s==null) return '一部未入力';
+  return (f===1||a===1||s===1)?'陽性':'陰性';
+}
+function kpssScore(){
+  const k=state.kpss;
+  const vals=[k.arousal,k.question,k.ur,k.ul,k.lr,k.ll,k.lang];
+  if(vals.some(v=>v==null)) return null;
+  return vals.reduce((x,y)=>x+y,0);
+}
+
+/* ----- ステータス更新/サマリ生成 ----- */
+function updateAll(){
+  // 経過
+  const el = elapsedMinutes(state.lkw, state.disc);
+  document.getElementById('elapsed').value = (el==null?'—':formatElapsed(el));
+  // 時系列警告
+  const warn = (state.lkw && state.disc && state.disc < state.lkw);
+  document.getElementById('timeWarn').style.display = warn ? 'block' : 'none';
+
+  // 6項目バッジ
+  const sixFilled = state.six.filter(x=>x!=null).length;
+  const sixEl = document.getElementById('sixState');
+  sixEl.textContent = sixFilled===0?'未入力':(sixFilled===6?'入力済み':'一部未入力');
+  sixEl.className = 'badge ' + (sixFilled===0?'bad':(sixFilled===6?'ok':'warn'));
+
+  // CPSS/ELVO/KPSS バッジ
+  const cj = cpssJudge();
+  document.getElementById('cpssJudge').value = cj;
+  const cEl = document.getElementById('cpssState');
+  cEl.textContent = cj;
+  cEl.className = 'badge ' + (cj==='陽性'||cj==='陰性'?'ok':(cj==='一部未入力'?'warn':'bad'));
+
+  const k = kpssScore();
+  document.getElementById('kpssTotal').value = (k==null?'—':`${k}`);
+  const kFilled = ['arousal','question','ur','ul','lr','ll','lang'].filter(key=>state.kpss[key]!=null).length;
+  const kEl = document.getElementById('kpssState');
+  kEl.textContent = kFilled===0?'未入力':(kFilled===7?'入力済み':'一部未入力');
+  kEl.className = 'badge ' + (kFilled===0?'bad':(kFilled===7?'ok':'warn'));
+
+  // Summary
+  set('out', summaryText());
+}
+
+function sixVal(x){ return x==null?'—':(x===0?'なし':'あり'); }
+function timeStr(d){ return d? new Date(d).toLocaleString(): '不明'; }
+
+function summaryText(){
+  const parts=[];
+  parts.push("脳卒中対応記録");
+  parts.push("");
+  parts.push(`ID: ${v('patientID')||'—'}`);
+  parts.push(`年齢: ${v('age')||'—'}　性別: ${state.sex}`);
+  parts.push(`認知症: ${state.dementia ?? '—'}`);
+  const anti = state.anti==null? '—' : (state.anti==='有り' ? (state.antiName.trim()? `有り(${state.antiName.trim()})` : '有り') : '無し');
+  parts.push(`抗凝固/抗血小板: ${anti}`);
+  let past = "—"; if(state.past.size>0){ past = Array.from(state.past).join(" / "); }
+  parts.push(`既往歴: ${past}`);
+  parts.push(`その他既往歴: ${state.pastOther?.trim()? state.pastOther.trim() : '—'}`);
+  parts.push(`最終健在: ${timeStr(state.lkw)}`);
+  parts.push(`発見・発症時刻: ${timeStr(state.disc)}`);
+  const el = elapsedMinutes(state.lkw, state.disc);
+  parts.push(`経過: ${el==null?'—':formatElapsed(el)}`);
+  parts.push("");
+  parts.push("バイタル:");
+  parts.push(`・JCS: ${v('jcs')||'—'} / GCS: E${v('gcsE')||'-'} V${v('gcsV')||'-'} M${v('gcsM')||'-'}`);
+  parts.push(`・BP: ${v('bpSys')||'—'}/${v('bpDia')||'—'} mmHg  SpO₂: ${v('spo2')||'—'}%  酸素: ${v('oxygenFlow')||'—'}L ${v('oxygenPercent')||'—'}%`);
+  const rhythm = state.rhythm + (state.rhythm==='不整' && state.irregular ? `, ${state.irregular}` : '');
+  parts.push(`・HR: ${v('hr')||'—'}/分 ${rhythm}`);
+  parts.push(`・BS: ${v('bs')||'—'} mg/dl  BT: ${v('bt')||'—'} ℃`);
+  const lightR = state.lightR ?? '未', lightL = state.lightL ?? '未';
+  parts.push(`・瞳孔: 右 ${v('pupilR')||'—'} mm / 左 ${v('pupilL')||'—'} mm （対光反射: 右${lightR}/左${lightL}）`);
+  parts.push("");
+  parts.push("6項目:");
+  parts.push(`・脈不整: ${sixVal(state.six[0])}`);
+  parts.push(`・共同偏視: ${sixVal(state.six[1])}`);
+  parts.push(`・半側空間無視: ${sixVal(state.six[2])}`);
+  parts.push(`・半盲: ${sixVal(state.six[3])}`);
+  parts.push(`・失語: ${sixVal(state.six[4])}`);
+  parts.push(`・片麻痺: ${sixVal(state.six[5])}`);
+  parts.push("");
+  const face = state.cpss.face==null? "—" : (state.cpss.face===0? "顔面: 正常" : `顔面: 異常(${state.cpss.faceSide??'左右未'})`);
+  const arm  = state.cpss.arm==null? "—" : (state.cpss.arm===0? "上肢: 正常" : `上肢: 異常(${state.cpss.armSide??'左右未'})`);
+  const speech = state.cpss.speech==null? "—" : `言語: ${state.cpss.speech===0?'正常':'異常'}`;
+  const judge = cpssJudge();
+  parts.push(`CPSS: ${judge}`);
+  parts.push(`・${[face,arm,speech].join(' / ')}`);
+  parts.push("");
+  function elvoLine(title, sel){
+    if(sel==null) return `${title}: —`;
+    if(sel===0) return `${title}: できる`;
+    if(sel===1) return `${title}: できない`;
+    if(sel===2) return `${title}: 評価困難`;
+    return `${title}: —`;
+  }
+  parts.push("ELVO:");
+  parts.push(`・${elvoLine("眼球位置", state.elvo.gaze)}`);
+  parts.push(`・${elvoLine("物品呼称", state.elvo.naming)}`);
+  parts.push(`・${elvoLine("指の数", state.elvo.fingers)}`);
+  parts.push("");
+  const k = kpssScore();
+  parts.push(`KPSS: 合計 ${k==null?'—':k}`);
+  const vOr = x=> (x==null?'—':x);
+  parts.push(`・意識水準: ${vOr(state.kpss.arousal)}, 意識障害: ${vOr(state.kpss.question)}, 上肢R: ${vOr(state.kpss.ur)}, 上肢L: ${vOr(state.kpss.ul)}, 下肢R: ${vOr(state.kpss.lr)}, 下肢L: ${vOr(state.kpss.ll)}, 言語: ${vOr(state.kpss.lang)}`);
+  return parts.join("\n");
+}
+
+/* ----- コピー/共有/履歴 ----- */
 function copyOut(){
   const text=document.getElementById('out').value||'';
   if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(text).then(()=>showToast('コピーしました'));
+    navigator.clipboard.writeText(text).then(()=>{saveHistory(text);showToast('コピーしました');});
   } else {
     const t=document.getElementById('out');
     t.select(); document.execCommand('copy'); t.setSelectionRange(0,0);
-    showToast('コピーしました');
+    saveHistory(text); showToast('コピーしました');
   }
 }
 async function shareOut(){
   const text=document.getElementById('out').value||'';
-  if(navigator.share){ try{ await navigator.share({text}); }catch(e){} }
-  else{ copyOut(); }
+  try{
+    if(navigator.share){ await navigator.share({text}); }
+  }finally{
+    saveHistory(text);
+  }
+}
+function saveHistory(text){
+  const item={ id:crypto.randomUUID(), createdAt: Date.now(), text };
+  const arr = JSON.parse(localStorage.getItem('summaryHistory')||'[]');
+  arr.unshift(item);
+  localStorage.setItem('summaryHistory', JSON.stringify(arr));
+  renderHistory();
+}
+function renderHistory(){
+  const listEl=document.getElementById('historyList');
+  const emptyEl=document.getElementById('historyEmpty');
+  const clearBtn=document.getElementById('clearBtn');
+  const arr = JSON.parse(localStorage.getItem('summaryHistory')||'[]');
+  if(arr.length===0){
+    listEl.style.display='none';
+    emptyEl.style.display='block';
+    clearBtn.style.display='none';
+    return;
+  }
+  listEl.style.display='block';
+  emptyEl.style.display='none';
+  clearBtn.style.display='inline-block';
+  listEl.innerHTML='';
+  arr.slice(0,10).forEach(entry=>{
+    const item=document.createElement('div');
+    item.className='item';
+    const d=new Date(entry.createdAt);
+    const ts = `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    item.innerHTML = `<div class="small" style="min-width:120px">${ts}</div><div class="small" style="white-space:pre-wrap">${entry.text}</div>`;
+    listEl.appendChild(item);
+  });
+}
+function clearHistory(){
+  localStorage.setItem('summaryHistory','[]');
+  renderHistory();
+}
+function resetAll(){
+  // 初期化（新規評価）
+  state = JSON.parse(JSON.stringify({
+    sex: "男", lkw:null, disc:null, dementia:null, anti:null, antiName:"", past:[], // pastは後でSetに戻す
+    jcs:"", gcsE:"", gcsV:"", gcsM:"", bpSys:"", bpDia:"", spo2:"", oxygenFlow:"", oxygenPercent:"",
+    hr:"", rhythm:"SR", irregular:null, bs:"", bt:"", pupilR:"", pupilL:"", lightR:null, lightL:null,
+    six:[null,null,null,null,null,null],
+    cpss:{face:null, arm:null, speech:null, faceSide:null, armSide:null},
+    elvo:{gaze:null, naming:null, fingers:null},
+    kpss:{ arousal:null, question:null, ur:null, ul:null, lr:null, ll:null, lang:null }
+  }));
+  state.past = new Set();
+  // 入力欄クリア
+  ["patientID","age","elapsed","jcs","gcsE","gcsV","gcsM","bpSys","bpDia","spo2","oxygenFlow","oxygenPercent","hr","bs","bt","pupilR","pupilL","antiName","pastOther","out"].forEach(id=>{ set(id,""); });
+  document.getElementById('lkwText').textContent='不明';
+  document.getElementById('discText').textContent='未入力';
+  // 選択UIのonクラスを除去
+  document.querySelectorAll('.pill.on, .seg button.on').forEach(el=>el.classList.remove('on'));
+  document.getElementById('irregularRow').style.display='none';
+  document.getElementById('antiNameWrap').style.display='none';
+  updateAll();
 }
 
-/* 初期化：UI構築とイベント（文字や並びは変えない） */
-function init(){
-  // ステップ
-  renderSteps(); updateVisible();
-
-  // 6項目（なし/あり）
-  const sixLabels=['脈不整','共同偏視','半側空間無視','半盲','失語','片麻痺'];
-  const cont=document.getElementById('sixItems');
-  sixLabels.forEach((lab,idx)=>{
-    const a=document.createElement('span'); a.className='pill'; a.textContent=lab+' なし';
-    const b=document.createElement('span'); b.className='pill'; b.textContent=lab+' あり';
-    a.onclick=()=>{ state.six[idx]=0; a.classList.add('on'); b.classList.remove('on'); updateStates(); };
-    b.onclick=()=>{ state.six[idx]=1; b.classList.add('on'); a.classList.remove('on'); updateStates(); };
-    cont.appendChild(a); cont.appendChild(b);
-  });
-
-  // CPSS（正常/異常）
-  seg2('cpssFace',   i=>state.cpss.face=i);
-  seg2('cpssArm',    i=>state.cpss.arm=i);
-  seg2('cpssSpeech', i=>state.cpss.speech=i);
-
-  // ELVO（日本語ラベル）
-  seg3('elvoGaze',    i=>state.elvo.gaze=i,   ['正中','共同偏視','評価困難']);
-  seg3('elvoNaming',  i=>state.elvo.naming=i, ['できる','できない','評価困難']);
-  seg3('elvoFingers', i=>state.elvo.fingers=i,['できる','できない','評価困難']);
-
-  // KPSS（0/1/2）
-  seg3('kpssArousal', i=>state.kpss.arousal=i, ['0','1','2']);
-  seg2('kpssQ',       i=>state.kpss.q=i);
-  seg3('kpssUR',      i=>state.kpss.ur=i, ['0','1','2']);
-  seg3('kpssUL',      i=>state.kpss.ul=i, ['0','1','2']);
-  seg3('kpssLR',      i=>state.kpss.lr=i, ['0','1','2']);
-  seg3('kpssLL',      i=>state.kpss.ll=i, ['0','1','2']);
-  seg3('kpssLang',    i=>state.kpss.lang=i, ['0','1','2']);
-
-  // 入力変化で状態更新（ID/性別/バイタルなど）
-  ['age','lkw','disc','patientID','sex','jcs','gcs','bp','spo2','hr','bsbt'].forEach(id=>{
-    const el=document.getElementById(id);
-    el.addEventListener('input', updateStates);
-    el.addEventListener('change', updateStates);
-  });
-
-  updateStates();
-}
+/* ----- 起動 ----- */
 init();
+renderHistory();
 </script>
 </body>
 </html>
