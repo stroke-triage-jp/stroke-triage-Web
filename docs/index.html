@@ -538,6 +538,10 @@ function init(){
     document.getElementById('antiNameWrap').style.display = (lab==="有り"?"block":"none");
     if(lab!=="有り"){ state.antiName=""; document.getElementById('antiName').value=""; }
   });
+  // KPSS
+pills('[data-step="kpss"]', 'data-kpss', (key, val)=>{
+  state.kpss[key] = parseInt(val, 10);
+});
   document.getElementById('antiName').addEventListener('input', e=>{ state.antiName = e.target.value; });
 
   // 既往歴チェック
