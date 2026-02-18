@@ -2,133 +2,348 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Stroke Triage (Web Mini)</title>
+  <title>Stroke Triage (Web)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: -apple-system, system-ui, sans-serif; margin: 16px; }
-    input, select, textarea { width: 100%; padding: 8px; margin: 6px 0; }
-    .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
-    button { padding: 10px 14px; border: 0; border-radius: 8px; background: #0a84ff; color: #fff; }
+    :root {
+      --bg: #f5f6f7;
+      --card: #fff;
+      --border: rgba(0,0,0,0.10);
+      --shadow: 0 1px 2px rgba(0,0,0,0.06);
+      --text: #111;
+      --muted: #6b7280;
+      --accent: #0a84ff;
+      --ok: #16a34a;
+      --warn: #f59e0b;
+      --bad: #dc2626;
+    }
+    body { font-family: -apple-system, system-ui, sans-serif; margin: 16px; color: var(--text); background: var(--bg); }
+    h1 { font-size: 22px; margin: 8px 0 16px; }
+    .section { margin-bottom: 14px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; box-shadow: var(--shadow); }
+    .card h3 { margin: 0 0 10px; font-size: 16px; }
+    .row { display: grid; grid-template-columns: 120px 1fr; gap: 10px; align-items: center; margin: 8px 0; }
+    label { font-size: 13px; color: #333; }
+    input, select, textarea {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 10px; background: #fff; box-sizing: border-box;
+    }
+    textarea { font-family: -apple-system, system-ui, sans-serif; }
+    .pill { display: inline-block; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--border); cursor: pointer; user-select: none; }
+    .pill.on { background: rgba(10,132,255,0.12); color: var(--accent); border-color: rgba(10,132,255,0.4); }
+    .pill-group { display: flex; flex-wrap: wrap; gap: 8px; }
+    .seg { display: inline-grid; grid-auto-flow: column; gap: 6px; }
+    .seg button { padding: 8px 12px; border: 1px solid var(--border); border-radius: 10px; background: #fff; }
+    .seg button.on { background: rgba(10,132,255,0.12); color: var(--accent); border-color: rgba(10,132,255,0.4); }
+    .toolbar { position: sticky; bottom: 0; background: rgba(245,246,247,0.92); backdrop-filter: saturate(180%) blur(10px); padding: 10px 0; border-top: 1px solid rgba(0,0,0,0.06); }
+    .btn { padding: 12px 14px; border: 0; border-radius: 12px; background: var(--accent); color: #fff; font-weight: 600; }
+    .btn.secondary { background: #fff; color: #111; border: 1px solid var(--border); }
+    .badge { font-size: 12px; padding: 4px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+    .badge.ok { color: var(--ok); border-color: rgba(22,163,74,0.4); background: rgba(22,163,74,0.08); }
+    .badge.warn { color: var(--warn); border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.08); }
+    .badge.bad { color: var(--bad); border-color: rgba(220,38,38,0.4); background: rgba(220,38,38,0.08); }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 640px) { .row { grid-template-columns: 1fr; } .grid2 { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-  <h1>Stroke Triage (Web Mini)</h1>
+  <h1>Stroke Triage (Web)</h1>
 
-  <div class="card">
-    <h3>基本</h3>
-    <label>ID <input id="patientID" placeholder="例: 123456"></label>
-    <label>年齢 <input id="age" placeholder="例: 56"></label>
-    <label>性別
-      <select id="sex">
-        <option>男</option>
-        <option>女</option>
-      </select>
-    </label>
-    <label>最終健在 <input id="lkw" type="datetime-local"></label>
-    <label>発見・発症 <input id="disc" type="datetime-local"></label>
+  <!-- 基本 -->
+  <div class="section">
+    <div class="card">
+      <h3>基本 <span id="basicState" class="badge">未入力</span></h3>
+      <div class="row"><label>ID</label><input id="patientID" placeholder="例: 123456"></div>
+      <div class="row"><label>年齢</label><input id="age" placeholder="例: 56"></div>
+      <div class="row"><label>性別</label>
+        <select id="sex"><option>男</option><option>女</option></select>
+      </div>
+      <div class="row"><label>最終健在</label><input id="lkw" type="datetime-local"></div>
+      <div class="row"><label>発見・発症</label><input id="disc" type="datetime-local"></div>
+      <div class="row"><label>経過</label><input id="elapsed" readonly placeholder="自動計算"></div>
+    </div>
   </div>
 
-  <div class="card">
-    <h3>CPSS</h3>
-    <label>顔面
-      <select id="cpssFace">
-        <option value="">—</option>
-        <option value="0">正常</option>
-        <option value="1">異常</option>
-      </select>
-    </label>
-    <label>上肢
-      <select id="cpssArm">
-        <option value="">—</option>
-        <option value="0">正常</option>
-        <option value="1">異常</option>
-      </select>
-    </label>
-    <label>言語
-      <select id="cpssSpeech">
-        <option value="">—</option>
-        <option value="0">正常</option>
-        <option value="1">異常</option>
-      </select>
-    </label>
+  <!-- バイタル（簡略） -->
+  <div class="section">
+    <div class="card">
+      <h3>バイタル</h3>
+      <div class="grid2">
+        <div class="row"><label>JCS</label><input id="jcs"></div>
+        <div class="row"><label>GCS</label><input id="gcs" placeholder="E V M"></div>
+        <div class="row"><label>BP</label><input id="bp" placeholder="120/80"></div>
+        <div class="row"><label>SpO₂</label><input id="spo2" placeholder="％"></div>
+        <div class="row"><label>HR</label><input id="hr" placeholder="/分"></div>
+        <div class="row"><label>BS/BT</label><input id="bsbt" placeholder="BS mg/dl / BT ℃"></div>
+      </div>
+    </div>
   </div>
 
-  <div class="card">
-    <h3>KPSS</h3>
-    <label>意識水準
-      <select id="kpssArousal">
-        <option value="">—</option>
-        <option value="0">0</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-      </select>
-    </label>
-    <label>質問
-      <select id="kpssQ">
-        <option value="">—</option>
-        <option value="0">0</option>
-        <option value="1">1</option>
-      </select>
-    </label>
+  <!-- 6項目 -->
+  <div class="section">
+    <div class="card">
+      <h3>6項目 <span id="sixState" class="badge">未入力</span></h3>
+      <div class="pill-group" id="sixItems"></div>
+    </div>
   </div>
 
-  <div class="card">
-    <button onclick="generate()">サマリ生成</button>
-    <textarea id="out" rows="10" placeholder="ここにサマリが出ます"></textarea>
+  <!-- CPSS + ELVO -->
+  <div class="section">
+    <div class="card">
+      <h3>CPSS / ELVO <span id="cpssState" class="badge">未入力</span></h3>
+      <div class="row"><label>顔面</label><div class="seg" id="cpssFace"></div></div>
+      <div class="row"><label>上肢</label><div class="seg" id="cpssArm"></div></div>
+      <div class="row"><label>言語</label><div class="seg" id="cpssSpeech"></div></div>
+      <div class="row"><label>判定</label><input id="cpssJudge" readonly></div>
+      <hr>
+      <div class="row"><label>眼球位置</label><div class="seg" id="elvoGaze"></div></div>
+      <div class="row"><label>物品呼称</label><div class="seg" id="elvoNaming"></div></div>
+      <div class="row"><label>指の数</label><div class="seg" id="elvoFingers"></div></div>
+    </div>
+  </div>
+
+  <!-- KPSS -->
+  <div class="section">
+    <div class="card">
+      <h3>KPSS <span id="kpssState" class="badge">未入力</span></h3>
+      <div class="row"><label>意識水準</label><div class="seg" id="kpssArousal"></div></div>
+      <div class="row"><label>質問</label><div class="seg" id="kpssQ"></div></div>
+      <div class="row"><label>上肢 右</label><div class="seg" id="kpssUR"></div></div>
+      <div class="row"><label>上肢 左</label><div class="seg" id="kpssUL"></div></div>
+      <div class="row"><label>下肢 右</label><div class="seg" id="kpssLR"></div></div>
+      <div class="row"><label>下肢 左</label><div class="seg" id="kpssLL"></div></div>
+      <div class="row"><label>言語</label><div class="seg" id="kpssLang"></div></div>
+      <div class="row"><label>合計</label><input id="kpssTotal" readonly></div>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="section">
+    <div class="card">
+      <h3>Summary</h3>
+      <div class="pill-group" style="margin-bottom:8px;">
+        <span class="badge" id="basicBadge">未入力</span>
+        <span class="badge" id="sixBadge">未入力</span>
+        <span class="badge" id="cpssBadge">未入力</span>
+        <span class="badge" id="kpssBadge">未入力</span>
+      </div>
+      <div class="grid2">
+        <button class="btn primary" onclick="generate()">サマリ生成</button>
+        <button class="btn secondary" onclick="copyOut()">コピー</button>
+      </div>
+      <div class="row" style="grid-template-columns:1fr;">
+        <textarea id="out" rows="12" placeholder="ここにサマリが出ます"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="grid2">
+      <button class="btn primary" onclick="generate()">サマリ生成</button>
+      <button class="btn secondary" onclick="copyOut()">コピー</button>
+    </div>
   </div>
 
 <script>
+const $ = s => document.querySelector(s);
+const v = id => document.getElementById(id).value;
+const set = (id, text) => document.getElementById(id).value = text;
+
+function pillGroup(id, labels, on) {
+  const el = document.getElementById(id); el.innerHTML = "";
+  labels.forEach((lab, idx) => {
+    const b = document.createElement('button');
+    b.className = 'pill'; b.textContent = lab;
+    b.onclick = () => { [...el.children].forEach(c=>c.classList.remove('on')); b.classList.add('on'); on(idx); updateStates(); };
+    el.appendChild(b);
+  });
+}
+function seg2(id, on) {
+  const el = document.getElementById(id); el.innerHTML = "";
+  ["0","1"].forEach((lab,idx)=> {
+    const b = document.createElement('button'); b.textContent = lab; b.onclick=()=>{ [...el.children].forEach(c=>c.classList.remove('on')); b.classList.add('on'); on(idx); updateStates(); };
+    el.appendChild(b);
+  });
+}
+function seg3(id, on, labels=["0","1","2"]) {
+  const el = document.getElementById(id); el.innerHTML = "";
+  labels.forEach((lab,idx)=> {
+    const b = document.createElement('button'); b.textContent = lab; b.onclick=()=>{ [...el.children].forEach(c=>c.classList.remove('on')); b.classList.add('on'); on(idx); updateStates(); };
+    el.appendChild(b);
+  });
+}
+
+let state = {
+  // basic
+  lkw: null, disc: null,
+  // six
+  six: [null,null,null,null,null,null],
+  // cp ss
+  cpss: { face: null, arm: null, speech: null },
+  // elvo
+  elvo: { gaze: null, naming: null, fingers: null },
+  // kpss
+  kpss: { arousal:null, q:null, ur:null, ul:null, lr:null, ll:null, lang:null }
+};
+
 function fmtElapsed(lkw, disc) {
-  if (!lkw || !disc) return "—";
+  if (!lkw || !disc) return null;
   const min = Math.round((disc - lkw)/60000);
-  const a = Math.abs(min);
-  const h = Math.floor(a/60), m = a%60;
+  const a = Math.abs(min); const h = Math.floor(a/60), m = a%60;
   return h>0 ? `${h}時間${m}分` : `${m}分`;
 }
 function cpssJudge(f,a,s) {
-  if (f==="" && a==="" && s==="") return "未入力";
-  if (f==="" || a==="" || s==="") return "一部未入力";
-  return (f==="1" || a==="1" || s==="1") ? "陽性" : "陰性";
+  if (f==null && a==null && s==null) return "未入力";
+  if (f==null || a==null || s==null) return "一部未入力";
+  return (f===1 || a===1 || s===1) ? "陽性" : "陰性";
 }
-function kpssScore(vals) {
-  if (vals.some(v => v==="")) return "—";
-  return vals.map(v=>parseInt(v,10)).reduce((x,y)=>x+y,0);
+function kpssScore(k) {
+  const vals = [k.arousal,k.q,k.ur,k.ul,k.lr,k.ll,k.lang];
+  if (vals.some(v=>v==null)) return null;
+  return vals.reduce((x,y)=>x+y,0);
 }
+
+function updateStates() {
+  // basic
+  const lkwStr = v('lkw'), discStr = v('disc');
+  state.lkw = lkwStr? new Date(lkwStr): null;
+  state.disc = discStr? new Date(discStr): null;
+  const elapsed = fmtElapsed(state.lkw, state.disc);
+  set('elapsed', elapsed ?? "—");
+  $('#basicState').className = 'badge ' + ( (v('age') && (state.lkw||state.disc)) ? 'ok' : ((v('age')||state.lkw||state.disc)?'warn':'bad') );
+  $('#basicState').textContent = (v('age') && (state.lkw||state.disc)) ? '入力済み' : ((v('age')||state.lkw||state.disc)?'一部未入力':'未入力');
+
+  // six
+  const sixFilled = state.six.filter(x=>x!=null).length;
+  $('#sixState').className = 'badge ' + (sixFilled===0?'bad':(sixFilled===6?'ok':'warn'));
+  $('#sixState').textContent = sixFilled===0?'未入力':(sixFilled===6?'入力済み':'一部未入力');
+
+  // cpss
+  const cj = cpssJudge(state.cpss.face, state.cpss.arm, state.cpss.speech);
+  set('cpssJudge', cj);
+  $('#cpssState').className = 'badge ' + (cj==='陽性' || cj==='陰性' ? 'ok' : (cj==='一部未入力'?'warn':'bad'));
+  $('#cpssState').textContent = cj;
+
+  // kpss
+  const ks = kpssScore(state.kpss);
+  set('kpssTotal', ks==null? '—' : `${ks}`);
+  const kFilled = Object.values(state.kpss).filter(x=>x!=null).length;
+  $('#kpssState').className = 'badge ' + (kFilled===0?'bad':(kFilled===7?'ok':'warn'));
+  $('#kpssState').textContent = kFilled===0?'未入力':(kFilled===7?'入力済み':'一部未入力');
+
+  // badges summary
+  $('#basicBadge').textContent = '基本: ' + $('#basicState').textContent;
+  $('#sixBadge').textContent   = '6項目: ' + $('#sixState').textContent;
+  $('#cpssBadge').textContent  = 'CPSS: ' + $('#cpssState').textContent;
+  $('#kpssBadge').textContent  = 'KPSS: ' + $('#kpssState').textContent;
+}
+
 function generate() {
-  const id = document.getElementById('patientID').value.trim() || "—";
-  const age = document.getElementById('age').value.trim() || "—";
-  const sex = document.getElementById('sex').value;
-  const lkwStr = document.getElementById('lkw').value;
-  const discStr = document.getElementById('disc').value;
-  const lkw = lkwStr ? new Date(lkwStr) : null;
-  const disc = discStr ? new Date(discStr) : null;
+  updateStates();
+  const timeStr = d => d? new Date(d).toLocaleString() : "不明";
+  const sixText = (idx,label) => {
+    const v = state.six[idx]; return `${label}: ${v==null? "—" : (v===0?"なし":"あり")}`;
+  };
+  const cpssPart = [
+    `顔面: ${state.cpss.face==null?"—":(state.cpss.face===0?"正常":"異常")}`,
+    `上肢: ${state.cpss.arm==null?"—":(state.cpss.arm===0?"正常":"異常")}`,
+    `言語: ${state.cpss.speech==null?"—":(state.cpss.speech===0?"正常":"異常")}`
+  ].join(" / ");
+  const elvoPart = [
+    `眼球位置: ${state.elvo.gaze==null?"—":(state.elvo.gaze===0?"正中":(state.elvo.gaze===1?"共同偏視":"評価困難"))}`,
+    `物品呼称: ${state.elvo.naming==null?"—":(state.elvo.naming===0?"できる":(state.elvo.naming===1?"できない":"評価困難"))}`,
+    `指の数: ${state.elvo.fingers==null?"—":(state.elvo.fingers===0?"できる":(state.elvo.fingers===1?"できない":"評価困難"))}`
+  ].join("\n・");
 
-  const f = document.getElementById('cpssFace').value;
-  const a = document.getElementById('cpssArm').value;
-  const s = document.getElementById('cpssSpeech').value;
-
-  const ar = document.getElementById('kpssArousal').value;
-  const q  = document.getElementById('kpssQ').value;
+  const ks = kpssScore(state.kpss);
+  const kpssItems = [
+    `意識水準: ${state.kpss.arousal??"—"}`,
+    `意識障害: ${state.kpss.q??"—"}`,
+    `上肢R: ${state.kpss.ur??"—"}`,
+    `上肢L: ${state.kpss.ul??"—"}`,
+    `下肢R: ${state.kpss.lr??"—"}`,
+    `下肢L: ${state.kpss.ll??"—"}`,
+    `言語: ${state.kpss.lang??"—"}`
+  ].join(", ");
 
   const summary = [
     "脳卒中対応記録",
     "",
-    `ID: ${id}`,
-    `年齢: ${age}　性別: ${sex}`,
-    `最終健在: ${lkw ? lkw.toLocaleString() : "不明"}`,
-    `発見・発症: ${disc ? disc.toLocaleString() : "不明"}`,
-    `経過: ${fmtElapsed(lkw, disc)}`,
+    `ID: ${v('patientID')||"—"}`,
+    `年齢: ${v('age')||"—"}　性別: ${v('sex')}`,
+    `最終健在: ${timeStr(state.lkw)}`,
+    `発見・発症: ${timeStr(state.disc)}`,
+    `経過: ${document.getElementById('elapsed').value || "—"}`,
     "",
-    `CPSS: ${cpssJudge(f,a,s)}`,
-    `・顔面: ${f==="" ? "—" : (f==="0"?"正常":"異常")}`,
-    `・上肢: ${a==="" ? "—" : (a==="0"?"正常":"異常")}`,
-    `・言語: ${s==="" ? "—" : (s==="0"?"正常":"異常")}`,
+    "バイタル:",
+    `・JCS: ${v('jcs')||"—"} / GCS: ${v('gcs')||"—"}`,
+    `・BP: ${v('bp')||"—"}  SpO₂: ${v('spo2')||"—"}  HR: ${v('hr')||"—"}`,
+    `・BS/BT: ${v('bsbt')||"—"}`,
     "",
-    `KPSS: 合計 ${kpssScore([ar,q])}`
+    "6項目:",
+    `・${sixText(0,"脈不整")}`,
+    `・${sixText(1,"共同偏視")}`,
+    `・${sixText(2,"半側空間無視")}`,
+    `・${sixText(3,"半盲")}`,
+    `・${sixText(4,"失語")}`,
+    `・${sixText(5,"片麻痺")}`,
+    "",
+    `CPSS: ${document.getElementById('cpssJudge').value}`,
+    `・${cpssPart}`,
+    "",
+    "ELVO:",
+    `・${elvoPart}`,
+    "",
+    `KPSS: 合計 ${ks==null?"—":ks}`,
+    `・${kpssItems}`
   ].join("\n");
-
-  document.getElementById('out').value = summary;
+  set('out', summary);
 }
+
+function copyOut() {
+  const t = document.getElementById('out');
+  t.select(); document.execCommand('copy'); t.setSelectionRange(0,0);
+  alert('コピーしました');
+}
+
+function init() {
+  // 6項目
+  const sixLabels = ["脈不整","共同偏視","半側空間無視","半盲","失語","片麻痺"];
+  const container = document.getElementById('sixItems');
+  sixLabels.forEach((lab, idx) => {
+    const a = document.createElement('span'); a.className='pill'; a.textContent=lab+" なし"; a.onclick=()=>{state.six[idx]=0; a.classList.add('on'); b.classList.remove('on'); updateStates();};
+    const b = document.createElement('span'); b.className='pill'; b.textContent=lab+" あり"; b.onclick=()=>{state.six[idx]=1; b.classList.add('on'); a.classList.remove('on'); updateStates();};
+    container.appendChild(a); container.appendChild(b);
+  });
+
+  // CPSS
+  seg2('cpssFace', i=>state.cpss.face=i);
+  seg2('cpssArm',  i=>state.cpss.arm=i);
+  seg2('cpssSpeech', i=>state.cpss.speech=i);
+
+  // ELVO
+  seg3('elvoGaze',    i=>state.elvo.gaze=i,    ["正中","共同偏視","評価困難"]);
+  seg3('elvoNaming',  i=>state.elvo.naming=i,  ["できる","できない","評価困難"]);
+  seg3('elvoFingers', i=>state.elvo.fingers=i, ["できる","できない","評価困難"]);
+
+  // KPSS
+  seg3('kpssArousal', i=>state.kpss.arousal=i, ["0","1","2"]);
+  seg2('kpssQ',       i=>state.kpss.q=i);
+  seg3('kpssUR',      i=>state.kpss.ur=i, ["0","1","2"]);
+  seg3('kpssUL',      i=>state.kpss.ul=i, ["0","1","2"]);
+  seg3('kpssLR',      i=>state.kpss.lr=i, ["0","1","2"]);
+  seg3('kpssLL',      i=>state.kpss.ll=i, ["0","1","2"]);
+  seg3('kpssLang',    i=>state.kpss.lang=i, ["0","1","2"]);
+
+  // 入力変化で状態更新
+  ['age','lkw','disc','patientID','sex','jcs','gcs','bp','spo2','hr','bsbt'].forEach(id=>{
+    document.getElementById(id).addEventListener('input', updateStates);
+    document.getElementById(id).addEventListener('change', updateStates);
+  });
+
+  updateStates();
+}
+init();
 </script>
 </body>
 </html>
