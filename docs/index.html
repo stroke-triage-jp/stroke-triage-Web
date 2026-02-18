@@ -12,32 +12,38 @@
     body{font-family:-apple-system,system-ui,sans-serif;margin:0;color:var(--text);background:var(--bg);}
     .container{max-width:960px;margin:0 auto;padding:14px;}
     h1{font-size:22px;margin:8px 0 12px;text-align:center;}
+    /* ステップヘッダー */
     .steps{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:6px 0 12px;}
     .step{padding:8px 12px;border-radius:999px;background:#fff;border:1px solid var(--border);cursor:pointer}
     .step.on{background:rgba(10,132,255,0.12);color:var(--accent);border-color:rgba(10,132,255,0.4)}
+    /* セクション/カード */
     .section{margin-bottom:14px;}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:var(--shadow);}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);}
     .card h3{margin:0 0 10px;font-size:16px;display:flex;align-items:center;gap:8px;}
-    .row{display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:center;margin:8px 0;}
+    .row{display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center;margin:10px 0;}
     label{font-size:13px;color:#333;}
+    /* 入力 */
     input,select,textarea{
-      width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;box-sizing:border-box;
+      width:100%;padding:14px 14px;border:1px solid var(--border);border-radius:10px;background:#fff;box-sizing:border-box;font-size:16px;
     }
     textarea{font-family:-apple-system,system-ui,sans-serif}
-    .pill{display:inline-block;padding:8px 12px;border-radius:12px;border:1px solid var(--border);cursor:pointer;user-select:none;}
+    /* ピル/セグメント */
+    .pill{display:inline-block;padding:12px 14px;border-radius:14px;border:1px solid var(--border);cursor:pointer;user-select:none;font-size:15px;}
     .pill.on{background:rgba(10,132,255,0.12);color:var(--accent);border-color:rgba(10,132,255,0.4)}
     .pill-group{display:flex;flex-wrap:wrap;gap:8px;}
-    .seg{display:inline-grid;grid-auto-flow:column;gap:6px}
-    .seg button{padding:8px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;cursor:pointer}
+    .seg{display:inline-grid;grid-auto-flow:column;gap:8px}
+    .seg button{padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;font-size:15px;}
     .seg button.on{background:rgba(10,132,255,0.12);color:var(--accent);border-color:rgba(10,132,255,0.4)}
+    /* バッジ */
     .badge{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted);}
     .ok{color:var(--ok);border-color:rgba(22,163,74,0.4);background:rgba(22,163,74,0.08)}
     .warn{color:var(--warn);border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.08)}
     .bad{color:var(--bad);border-color:rgba(220,38,38,0.4);background:rgba(220,38,38,0.08)}
+    /* 2列グリッド/ツールバー/ボタン */
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .toolbar{position:sticky;bottom:0;background:rgba(245,246,247,0.92);backdrop-filter:saturate(180%) blur(10px);
       padding:10px 0;border-top:1px solid rgba(0,0,0,0.06)}
-    .btn{padding:12px 14px;border:0;border-radius:12px;background:var(--accent);color:#fff;font-weight:600;cursor:pointer}
+    .btn{padding:14px 16px;border:0;border-radius:12px;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;font-size:16px;}
     .btn.secondary{background:#fff;color:#111;border:1px solid var(--border)}
     .hint{font-size:12px;color:var(--muted)}
     @media(max-width:640px){.row{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}}
@@ -47,7 +53,7 @@
   <div class="container">
     <h1>Stroke Triage</h1>
 
-    <!-- ステップヘッダー -->
+    <!-- ステップヘッダー（アプリのタブ風） -->
     <div class="steps" id="steps"></div>
 
     <!-- Overview -->
@@ -55,12 +61,12 @@
       <div class="card">
         <h3>基本情報 <span id="basicState" class="badge">未入力</span></h3>
         <div class="row"><label>ID</label><input id="patientID" placeholder="例: 123456"></div>
-        <div class="row"><label>年齢</label><input id="age" placeholder="例: 56"></div>
+        <div class="row"><label>年齢</label><input id="age" inputmode="numeric" placeholder="例: 56"></div>
         <div class="row"><label>性別</label>
           <select id="sex"><option>男</option><option>女</option></select>
         </div>
         <div class="row"><label>最終健在</label><input id="lkw" type="datetime-local"></div>
-        <div class="row"><label>発見・発症</label><input id="disc" type="datetime-local"></div>
+        <div class="row"><label>発見・発症時刻</label><input id="disc" type="datetime-local"></div>
         <div class="row"><label>経過</label><input id="elapsed" readonly placeholder="自動計算"></div>
 
         <div class="card" style="margin-top:10px">
@@ -69,8 +75,8 @@
             <div class="row"><label>JCS</label><input id="jcs"></div>
             <div class="row"><label>GCS</label><input id="gcs" placeholder="E V M"></div>
             <div class="row"><label>BP</label><input id="bp" placeholder="120/80"></div>
-            <div class="row"><label>SpO₂</label><input id="spo2" placeholder="％"></div>
-            <div class="row"><label>HR</label><input id="hr" placeholder="/分"></div>
+            <div class="row"><label>SpO₂</label><input id="spo2" inputmode="numeric" placeholder="％"></div>
+            <div class="row"><label>HR</label><input id="hr" inputmode="numeric" placeholder="/分"></div>
             <div class="row"><label>BS/BT</label><input id="bsbt" placeholder="BS mg/dl / BT ℃"></div>
           </div>
         </div>
@@ -82,7 +88,7 @@
       <div class="card">
         <h3>6項目 <span id="sixState" class="badge">未入力</span></h3>
         <div class="pill-group" id="sixItems"></div>
-        <div class="hint">各項目「なし/あり」を選択</div>
+        <div class="hint">各項目「なし / あり」を選択</div>
       </div>
     </div>
 
@@ -134,10 +140,9 @@
         </div>
       </div>
     </div>
-
   </div>
 
-  <!-- ボトムツールバー -->
+  <!-- ボトムツールバー（戻る/次へ） -->
   <div class="toolbar">
     <div class="container">
       <div class="grid2">
@@ -179,9 +184,10 @@ const $ = s => document.querySelector(s);
 const v = id => document.getElementById(id).value;
 const set = (id, text) => document.getElementById(id).value = text;
 
+/* 2択/3択のセグメントUI */
 function seg2(id, on){
   const el=document.getElementById(id); el.innerHTML='';
-  ['0','1'].forEach((lab,idx)=>{
+  ['正常','異常'].forEach((lab,idx)=>{
     const b=document.createElement('button'); b.textContent=lab; b.onclick=()=>{ [...el.children].forEach(c=>c.classList.remove('on')); b.classList.add('on'); on(idx); updateStates(); };
     el.appendChild(b);
   });
@@ -194,6 +200,7 @@ function seg3(id, on, labels=['0','1','2']){
   });
 }
 
+/* 状態 */
 let state = {
   lkw:null, disc:null,
   six:[null,null,null,null,null,null],
@@ -202,6 +209,7 @@ let state = {
   kpss:{arousal:null,q:null,ur:null,ul:null,lr:null,ll:null,lang:null}
 };
 
+/* ロジック */
 function fmtElapsed(lkw,disc){
   if(!lkw||!disc) return null;
   const min=Math.round((disc-lkw)/60000);
@@ -219,6 +227,7 @@ function kpssScore(k){
   return vals.reduce((x,y)=>x+y,0);
 }
 
+/* ステータス更新 */
 function updateStates(){
   const lkwStr=v('lkw'), discStr=v('disc');
   state.lkw = lkwStr? new Date(lkwStr): null;
@@ -226,7 +235,6 @@ function updateStates(){
   const elapsed=fmtElapsed(state.lkw,state.disc);
   set('elapsed', elapsed??'—');
 
-  // badges
   const basicOK = (v('age') && (state.lkw||state.disc));
   const basicPart = (v('age')||state.lkw||state.disc);
   const bEl=$('#basicState'); bEl.className='badge '+(basicOK?'ok':(basicPart?'warn':'bad')); bEl.textContent=basicOK?'入力済み':(basicPart?'一部未入力':'未入力');
@@ -244,6 +252,7 @@ function updateStates(){
   const kEl=$('#kpssState'); kEl.className='badge '+(kFilled===0?'bad':(kFilled===7?'ok':'warn')); kEl.textContent=kFilled===0?'未入力':(kFilled===7?'入力済み':'一部未入力');
 }
 
+/* サマリ生成（アプリのsummaryTextに寄せる） */
 function generate(){
   updateStates();
   const timeStr=d=>d? new Date(d).toLocaleString(): '不明';
@@ -307,6 +316,7 @@ function generate(){
   set('out', summary);
 }
 
+/* コピー/共有 */
 function copyOut(){
   const t=document.getElementById('out');
   t.select(); document.execCommand('copy'); t.setSelectionRange(0,0);
@@ -318,8 +328,12 @@ async function shareOut(){
   else{ copyOut(); }
 }
 
+/* 初期化：UI構築とイベント */
 function init(){
-  // 6項目
+  // ステップ
+  renderSteps(); updateVisible();
+
+  // 6項目（なし/あり）
   const sixLabels=['脈不整','共同偏視','半側空間無視','半盲','失語','片麻痺'];
   const cont=document.getElementById('sixItems');
   sixLabels.forEach((lab,idx)=>{
@@ -330,17 +344,17 @@ function init(){
     cont.appendChild(a); cont.appendChild(b);
   });
 
-  // CPSS
+  // CPSS（正常/異常）
   seg2('cpssFace',   i=>state.cpss.face=i);
   seg2('cpssArm',    i=>state.cpss.arm=i);
   seg2('cpssSpeech', i=>state.cpss.speech=i);
 
-  // ELVO
+  // ELVO（日本語ラベル）
   seg3('elvoGaze',    i=>state.elvo.gaze=i,   ['正中','共同偏視','評価困難']);
   seg3('elvoNaming',  i=>state.elvo.naming=i, ['できる','できない','評価困難']);
   seg3('elvoFingers', i=>state.elvo.fingers=i,['できる','できない','評価困難']);
 
-  // KPSS
+  // KPSS（0/1/2）
   seg3('kpssArousal', i=>state.kpss.arousal=i, ['0','1','2']);
   seg2('kpssQ',       i=>state.kpss.q=i);
   seg3('kpssUR',      i=>state.kpss.ur=i, ['0','1','2']);
@@ -349,15 +363,13 @@ function init(){
   seg3('kpssLL',      i=>state.kpss.ll=i, ['0','1','2']);
   seg3('kpssLang',    i=>state.kpss.lang=i, ['0','1','2']);
 
-  // 入力反映
+  // 入力変化で状態更新
   ['age','lkw','disc','patientID','sex','jcs','gcs','bp','spo2','hr','bsbt'].forEach(id=>{
     const el=document.getElementById(id);
     el.addEventListener('input', updateStates);
     el.addEventListener('change', updateStates);
   });
 
-  renderSteps();
-  updateVisible();
   updateStates();
 }
 init();
