@@ -423,10 +423,14 @@ const steps = [
 let current = 0;
 
 function startEval(){
+  current = 0;               // ← 追加（これが超重要）
+
   document.getElementById('intro').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
-  document.getElementById('bottomBar').style.display='block'; // Introでは非表示→アプリ画面で表示
-  renderSteps(); updateVisible();
+  document.getElementById('bottomBar').style.display='block';
+
+  renderSteps();
+  updateVisible(true);       // ← trueに変更
 }
 
 function renderSteps(){
@@ -783,6 +787,7 @@ function clearHistory(){
   renderHistory();
 }
 function resetAll(){
+  
   // 初期化（新規評価）
   state = {
     sex: "男", lkw:null, disc:null, dementia:null, anti:null, antiName:"", past:new Set(), pastOther:"",
