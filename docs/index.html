@@ -798,7 +798,18 @@ function resetAll(){
   // 選択UIのonクラスを除去
   document.querySelectorAll('.pill.on, .seg button.on').forEach(el=>el.classList.remove('on'));
   updateAll();
-}
+
+// ---- トップへ戻る ----
+current = 0;
+renderSteps();
+updateVisible(true);
+
+document.getElementById('app').classList.add('hidden');
+document.getElementById('intro').classList.remove('hidden');
+document.getElementById('bottomBar').style.display = 'none';
+
+window.scrollTo({ top: 0, behavior: 'smooth' });
+}}
 
 /* ----- 起動 ----- */
 init();
