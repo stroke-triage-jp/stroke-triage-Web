@@ -48,16 +48,18 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(10,132,25
   padding:10px 0;border-top:1px solid rgba(0,0,0,0.08)}
 .btn{padding:12px 14px;border:0;border-radius:12px;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;font-size:16px;}
 .btn.secondary{background:#fff;color:#111;border:1px solid var(--border)}
-.small{font-size:12px;color:var(--muted)}
+.small{font-size:12px;color:#6b7280}
 @media(max-width:640px){.row{grid-template-columns:1fr}}
 #toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:10px 14px;border-radius:12px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:9999;font-size:14px;}
 .list{border:1px solid var(--border);border-radius:12px;overflow:hidden}
 .list .item{padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:flex-start}
 .list .item:first-child{border-top:none}
+.hidden{display:none !important}
 </style>
 </head>
 <body>
 
+<!-- Intro（TOPには戻る/次へなし） -->
 <div class="container" id="intro">
   <h1>Stroke Triage</h1>
   <div class="card">
@@ -94,7 +96,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(10,132,25
   </div>
 </div>
 
-<div class="container" id="app" style="display:none">
+<div class="container hidden" id="app">
   <h1>Stroke Triage</h1>
   <div class="steps" id="steps"></div>
 
@@ -105,13 +107,13 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(10,132,25
 
       <div class="row">
         <label>ID</label>
-        <input id="patientID" placeholder="例：123456">
+        <input id="patientID" placeholder="例：123456" inputmode="numeric">
       </div>
 
       <div class="row">
         <label>年齢</label>
         <div class="row-inline">
-          <input id="age" placeholder="例：56" style="width:120px">
+          <input id="age" placeholder="例：56" inputmode="numeric" style="width:120px">
           <div style="width:8px"></div>
           <div class="seg" id="sexSeg"></div>
         </div>
@@ -124,17 +126,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(10,132,25
 
       <div class="row">
         <label>最終健在</label>
-        <div class="row-inline" style="flex:1">
-          <button class="pill" id="lkwBtn" onclick="pickTime('lkw')"><span id="lkwText">不明</span></button>
-          <button class="pill" onclick="setUnknown('lkw')">不明</button>
-        </div>
+        <input id="lkw" type="datetime-local">
       </div>
 
       <div class="row">
         <label>発見・発症時刻</label>
-        <div class="row-inline" style="flex:1">
-          <button class="pill" id="discBtn" onclick="pickTime('disc')"><span id="discText">未入力</span></button>
-        </div>
+        <input id="disc" type="datetime-local">
       </div>
 
       <div class="card" style="margin-top:10px">
@@ -142,29 +139,29 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(10,132,25
 
         <div class="row">
           <label>JCS</label>
-          <input id="jcs" placeholder="—" style="width:80px">
+          <input id="jcs" placeholder="—" inputmode="numeric" style="width:80px">
           <div></div>
         </div>
 
         <div class="row">
           <label>GCS</label>
           <div class="row-inline">
-            <span>E</span><input id="gcsE" placeholder="—" style="width:60px">
-            <span>V</span><input id="gcsV" placeholder="—" style="width:60px">
-            <span>M</span><input id="gcsM" placeholder="—" style="width:60px">
+            <span>E</span><input id="gcsE" placeholder="—" inputmode="numeric" style="width:60px">
+            <span>V</span><input id="gcsV" placeholder="—" inputmode="numeric" style="width:60px">
+            <span>M</span><input id="gcsM" placeholder="—" inputmode="numeric" style="width:60px">
           </div>
         </div>
 
         <div class="row">
           <label>BP</label>
           <div class="row-inline">
-            <input id="bpSys" placeholder="—" style="width:64px">
+            <input id="bpSys" placeholder="—" inputmode="numeric" style="width:64px">
             <span>/</span>
-            <input id="bpDia" placeholder="—" style="width:64px">
+            <input id="bpDia" placeholder="—" inputmode="numeric" style="width:64px">
             <span>mmHg</span>
             <div style="flex:1"></div>
             <span>SpO₂</span>
-            <input id="spo2" placeholder="—" style="width:60px">
+            <input id="spo2" placeholder="—" inputmode="numeric" style="width:60px">
             <span>％</span>
           </div>
         </div>
@@ -172,15 +169,15 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(10,132,25
         <div class="row">
           <label>酸素</label>
           <div class="row-inline">
-            <input id="oxygenFlow" placeholder="—" style="width:60px"><span>L</span>
-            <input id="oxygenPercent" placeholder="—" style="width:60px"><span>％</span>
+            <input id="oxygenFlow" placeholder="—" inputmode="decimal" style="width:60px"><span>L</span>
+            <input id="oxygenPercent" placeholder="—" inputmode="numeric" style="width:60px"><span>％</span>
           </div>
         </div>
 
         <div class="row">
           <label>HR</label>
           <div class="row-inline">
-            <input id="hr" placeholder="—" style="width:64px"><span>/分</span>
+            <input id="hr" placeholder="—" inputmode="numeric" style="width:64px"><span>/分</span>
             <div class="seg" id="rhythmSeg"></div>
           </div>
         </div>
@@ -193,17 +190,17 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(10,132,25
         <div class="row">
           <label>BS</label>
           <div class="row-inline">
-            <input id="bs" placeholder="—" style="width:80px"><span>mg/dl</span>
+            <input id="bs" placeholder="—" inputmode="decimal" style="width:80px"><span>mg/dl</span>
             <div style="flex:1"></div>
-            <span>BT</span><input id="bt" placeholder="—" style="width:64px"><span>℃</span>
+            <span>BT</span><input id="bt" placeholder="—" inputmode="decimal" style="width:64px"><span>℃</span>
           </div>
         </div>
 
         <div class="row">
           <label>瞳孔</label>
           <div class="row-inline">
-            <span>右</span><input id="pupilR" placeholder="—" style="width:60px"><span>mm</span>
-            <span>/ 左</span><input id="pupilL" placeholder="—" style="width:60px"><span>mm</span>
+            <span>右</span><input id="pupilR" placeholder="—" inputmode="decimal" style="width:60px"><span>mm</span>
+            <span>/ 左</span><input id="pupilL" placeholder="—" inputmode="decimal" style="width:60px"><span>mm</span>
           </div>
         </div>
 
@@ -386,7 +383,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(10,132,25
       <h3>共有</h3>
       <div class="card" style="margin:8px 0">
         <h3>Stroke Triage</h3>
-        <textarea id="out" rows="16" style="width:100%"></textarea>
+        <textarea id="out" rows="18" style="width:100%"></textarea>
       </div>
       <div class="grid2" style="margin-top:8px">
         <button class="btn" onclick="resetAll()">新規評価</button>
@@ -395,11 +392,15 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(10,132,25
       <div style="margin-top:8px">
         <button class="btn" onclick="shareOut()">共有</button>
       </div>
+      <div style="margin-top:10px" class="small">
+        新規評価を押した場合、履歴に残りません。履歴を残す場合は、先にコピー/共有で保存してから「新規評価」を押してください。
+      </div>
     </div>
   </div>
 </div>
 
-<div class="toolbar">
+<!-- ボトムツールバー（Introでは非表示） -->
+<div class="toolbar" id="bottomBar" style="display:none">
   <div class="container">
     <div class="grid2">
       <button class="btn secondary" onclick="prevStep()">戻る</button>
@@ -422,8 +423,9 @@ const steps = [
 let current = 0;
 
 function startEval(){
-  document.getElementById('intro').style.display='none';
-  document.getElementById('app').style.display='block';
+  document.getElementById('intro').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('bottomBar').style.display='block'; // Introでは非表示→アプリ画面で表示
   renderSteps(); updateVisible();
 }
 
@@ -469,6 +471,7 @@ let state = {
   anti: null,     // "有り" | "無し"
   antiName: "",
   past: new Set(),
+  pastOther: "",
   // バイタル
   jcs:"", gcsE:"", gcsV:"", gcsM:"",
   bpSys:"", bpDia:"", spo2:"", oxygenFlow:"", oxygenPercent:"",
@@ -494,17 +497,19 @@ function seg2(el, labels, on){
   });
 }
 function pills(containerSelector, attr, on){
-  document.querySelectorAll(containerSelector).forEach(p=>{
-    p.addEventListener('click', (e)=>{
-      if(e.target.classList.contains('pill')){
-        const val=e.target.getAttribute('data-val');
-        const key=e.target.getAttribute(attr);
-        on(key, val);
-        // 同一グループの選択表示
-        const parent=e.target.parentElement;
-        [...parent.querySelectorAll(`.pill[${attr}="${key}"]`)].forEach(x=>x.classList.remove('on'));
-        e.target.classList.add('on');
-      }
+  document.querySelectorAll(containerSelector).forEach(parent=>{
+    parent.addEventListener('click', (e)=>{
+      const t = e.target;
+      if(!(t instanceof HTMLElement)) return;
+      if(!t.classList.contains('pill')) return;
+      const key=t.getAttribute(attr); const val=t.getAttribute('data-val');
+      if(key==null || val==null) return;
+      on(key, val);
+      // 同一グループの選択表示
+      const groupSelector = `.pill[${attr}="${key}"]`;
+      document.querySelectorAll(groupSelector).forEach(x=>x.classList.remove('on'));
+      t.classList.add('on');
+      updateAll();
     });
   });
 }
@@ -548,20 +553,23 @@ function init(){
   document.getElementById('pastOther').addEventListener('input', e=>{ state.pastOther = e.target.value; });
 
   // 6項目
-  pills('[data-step="six"]', 'data-six', (idx, val)=>{ state.six[parseInt(idx)] = parseInt(val); });
+  pills('[data-step="six"]', 'data-six', (idx, val)=>{ state.six[parseInt(idx,10)] = parseInt(val,10); });
 
   // CPSS
   pills('[data-step="cpss"]', 'data-cpss', (key, val)=>{
-    if(key==="face"){ state.cpss.face=parseInt(val); document.getElementById('faceSideWrap').style.display = (val==="1"?"block":"none"); if(val!=="1"){ state.cpss.faceSide=null; } }
-    if(key==="arm"){ state.cpss.arm=parseInt(val); document.getElementById('armSideWrap').style.display = (val==="1"?"block":"none"); if(val!=="1"){ state.cpss.armSide=null; } }
-    if(key==="speech"){ state.cpss.speech=parseInt(val); }
+    if(key==="face"){ state.cpss.face=parseInt(val,10); document.getElementById('faceSideWrap').style.display = (val==="1"?"block":"none"); if(val!=="1"){ state.cpss.faceSide=null; } }
+    if(key==="arm"){ state.cpss.arm=parseInt(val,10); document.getElementById('armSideWrap').style.display = (val==="1"?"block":"none"); if(val!=="1"){ state.cpss.armSide=null; } }
+    if(key==="speech"){ state.cpss.speech=parseInt(val,10); }
   });
   document.querySelectorAll('#faceSideWrap [data-side], #armSideWrap [data-side]').forEach(btn=>{
     btn.addEventListener('click', (e)=>{
-      const k=e.target.getAttribute('data-side');
-      const val=e.target.getAttribute('data-val');
-      [...e.target.parentElement.children].forEach(x=>x.classList.remove('on'));
-      e.target.classList.add('on');
+      const tgt = e.target;
+      if(!(tgt instanceof HTMLElement)) return;
+      const k=tgt.getAttribute('data-side');
+      const val=tgt.getAttribute('data-val');
+      if(!k||!val) return;
+      [...tgt.parentElement.children].forEach(x=>x.classList.remove('on'));
+      tgt.classList.add('on');
       if(k==="face"){ state.cpss.faceSide=val; }
       if(k==="arm"){ state.cpss.armSide=val; }
       updateAll();
@@ -569,29 +577,25 @@ function init(){
   });
 
   // ELVO
-  pills('[data-step="cpss"]', 'data-elvo', (key, val)=>{
-    state.elvo[key]=parseInt(val);
-  });
+  pills('[data-step="cpss"]', 'data-elvo', (key, val)=>{ state.elvo[key]=parseInt(val,10); });
 
   // 入力イベント（基本情報/バイタル）
   ["patientID","age","jcs","gcsE","gcsV","gcsM","bpSys","bpDia","spo2","oxygenFlow","oxygenPercent","hr","bs","bt","pupilR","pupilL"].forEach(id=>{
-    document.getElementById(id).addEventListener('input', updateAll);
+    document.getElementById(id).addEventListener('input', e=>{
+      const t=e.target; if(!(t instanceof HTMLInputElement)) return;
+      state[id] = t.value;
+      updateAll();
+    });
   });
-}
 
-function setUnknown(kind){
-  if(kind==='lkw'){ state.lkw=null; document.getElementById('lkwText').textContent='不明'; }
-  updateAll();
-}
-
-function pickTime(kind){
-  const val = prompt("日時を YYYY-MM-DD HH:mm 形式で入力");
-  if(!val) return;
-  const d = new Date(val.replace(/-/g,'/'));
-  if(isNaN(d.getTime())) return;
-  if(kind==='lkw'){ state.lkw=d; document.getElementById('lkwText').textContent = d.toLocaleString(); }
-  if(kind==='disc'){ state.disc=d; document.getElementById('discText').textContent = d.toLocaleString(); }
-  updateAll();
+  // 日時入力
+  ["lkw","disc"].forEach(id=>{
+    document.getElementById(id).addEventListener('change', e=>{
+      const t=e.target; if(!(t instanceof HTMLInputElement)) return;
+      state[id] = t.value ? new Date(t.value) : null;
+      updateAll();
+    });
+  });
 }
 
 /* ----- ロジック ----- */
@@ -618,7 +622,7 @@ function kpssScore(){
 
 /* ----- ステータス更新/サマリ生成 ----- */
 function updateAll(){
-  // 経過
+  // 経過（日時2つから計算）
   const el = elapsedMinutes(state.lkw, state.disc);
   document.getElementById('elapsed').value = (el==null?'—':formatElapsed(el));
   // 時系列警告
@@ -631,13 +635,21 @@ function updateAll(){
   sixEl.textContent = sixFilled===0?'未入力':(sixFilled===6?'入力済み':'一部未入力');
   sixEl.className = 'badge ' + (sixFilled===0?'bad':(sixFilled===6?'ok':'warn'));
 
-  // CPSS/ELVO/KPSS バッジ
+  // CPSSバッジ
   const cj = cpssJudge();
   document.getElementById('cpssJudge').value = cj;
   const cEl = document.getElementById('cpssState');
   cEl.textContent = cj;
   cEl.className = 'badge ' + (cj==='陽性'||cj==='陰性'?'ok':(cj==='一部未入力'?'warn':'bad'));
 
+  // ELVOバッジ（入力状態表示）
+  const elvoVals=[state.elvo.gaze,state.elvo.naming,state.elvo.fingers];
+  const elvoFilled=elvoVals.filter(v=>v!=null).length;
+  const eEl=document.getElementById('elvoState');
+  eEl.textContent = elvoFilled===0?'未入力':(elvoFilled===3?'入力済み':'一部未入力');
+  eEl.className = 'badge ' + (elvoFilled===0?'bad':(elvoFilled===3?'ok':'warn'));
+
+  // KPSSバッジ/合計
   const k = kpssScore();
   document.getElementById('kpssTotal').value = (k==null?'—':`${k}`);
   const kFilled = ['arousal','question','ur','ul','lr','ll','lang'].filter(key=>state.kpss[key]!=null).length;
@@ -659,7 +671,7 @@ function summaryText(){
   parts.push(`ID: ${v('patientID')||'—'}`);
   parts.push(`年齢: ${v('age')||'—'}　性別: ${state.sex}`);
   parts.push(`認知症: ${state.dementia ?? '—'}`);
-  const anti = state.anti==null? '—' : (state.anti==='有り' ? (state.antiName.trim()? `有り(${state.antiName.trim()})` : '有り') : '無し');
+  const anti = state.anti==null? '—' : (state.anti==='有り' ? (state.antiName?.trim()? `有り(${state.antiName.trim()})` : '有り') : '無し');
   parts.push(`抗凝固/抗血小板: ${anti}`);
   let past = "—"; if(state.past.size>0){ past = Array.from(state.past).join(" / "); }
   parts.push(`既往歴: ${past}`);
@@ -682,9 +694,9 @@ function summaryText(){
   parts.push(`・脈不整: ${sixVal(state.six[0])}`);
   parts.push(`・共同偏視: ${sixVal(state.six[1])}`);
   parts.push(`・半側空間無視: ${sixVal(state.six[2])}`);
-  parts.push(`・半盲: ${sixVal(state.six[3])}`);
   parts.push(`・失語: ${sixVal(state.six[4])}`);
-  parts.push(`・片麻痺: ${sixVal(state.six[5])}`);
+  parts.push(`・顔面麻痺: ${sixVal(state.six[3])}`);
+  parts.push(`・上肢麻痺: ${sixVal(state.six[5])}`);
   parts.push("");
   const face = state.cpss.face==null? "—" : (state.cpss.face===0? "顔面: 正常" : `顔面: 異常(${state.cpss.faceSide??'左右未'})`);
   const arm  = state.cpss.arm==null? "—" : (state.cpss.arm===0? "上肢: 正常" : `上肢: 異常(${state.cpss.armSide??'左右未'})`);
@@ -768,24 +780,19 @@ function clearHistory(){
 }
 function resetAll(){
   // 初期化（新規評価）
-  state = JSON.parse(JSON.stringify({
-    sex: "男", lkw:null, disc:null, dementia:null, anti:null, antiName:"", past:[], // pastは後でSetに戻す
+  state = {
+    sex: "男", lkw:null, disc:null, dementia:null, anti:null, antiName:"", past:new Set(), pastOther:"",
     jcs:"", gcsE:"", gcsV:"", gcsM:"", bpSys:"", bpDia:"", spo2:"", oxygenFlow:"", oxygenPercent:"",
     hr:"", rhythm:"SR", irregular:null, bs:"", bt:"", pupilR:"", pupilL:"", lightR:null, lightL:null,
     six:[null,null,null,null,null,null],
     cpss:{face:null, arm:null, speech:null, faceSide:null, armSide:null},
     elvo:{gaze:null, naming:null, fingers:null},
     kpss:{ arousal:null, question:null, ur:null, ul:null, lr:null, ll:null, lang:null }
-  }));
-  state.past = new Set();
+  };
   // 入力欄クリア
-  ["patientID","age","elapsed","jcs","gcsE","gcsV","gcsM","bpSys","bpDia","spo2","oxygenFlow","oxygenPercent","hr","bs","bt","pupilR","pupilL","antiName","pastOther","out"].forEach(id=>{ set(id,""); });
-  document.getElementById('lkwText').textContent='不明';
-  document.getElementById('discText').textContent='未入力';
+  ["patientID","age","elapsed","jcs","gcsE","gcsV","gcsM","bpSys","bpDia","spo2","oxygenFlow","oxygenPercent","hr","bs","bt","pupilR","pupilL","antiName","pastOther","out","lkw","disc","kpssTotal"].forEach(id=>{ set(id,""); });
   // 選択UIのonクラスを除去
   document.querySelectorAll('.pill.on, .seg button.on').forEach(el=>el.classList.remove('on'));
-  document.getElementById('irregularRow').style.display='none';
-  document.getElementById('antiNameWrap').style.display='none';
   updateAll();
 }
 
