@@ -423,14 +423,14 @@ const steps = [
 let current = 0;
 
 function startEval(){
-  current = 0;               // ← 追加（これが超重要）
+  current = 0;               // ← 重要: 最初のステップへ
 
   document.getElementById('intro').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('bottomBar').style.display='block';
 
   renderSteps();
-  updateVisible(true);       // ← trueに変更
+  updateVisible(true);
 }
 
 function renderSteps(){
@@ -542,10 +542,11 @@ function init(){
     document.getElementById('antiNameWrap').style.display = (lab==="有り"?"block":"none");
     if(lab!=="有り"){ state.antiName=""; document.getElementById('antiName').value=""; }
   });
+
   // KPSS
-pills('[data-step="kpss"]', 'data-kpss', (key, val)=>{
-  state.kpss[key] = parseInt(val, 10);
-});
+  pills('[data-step="kpss"]', 'data-kpss', (key, val)=>{
+    state.kpss[key] = parseInt(val, 10);
+  });
   document.getElementById('antiName').addEventListener('input', e=>{ state.antiName = e.target.value; });
 
   // 既往歴チェック
@@ -743,14 +744,40 @@ function copyOut(){
     saveHistory(text); showToast('コピーしました');
   }
 }
+
+// 修正済み: 共有成功時のみ履歴保存。非対応環境はコピーへフォールバック。
 async function shareOut(){
-  const text=document.getElementById('out').value||'';
-  try{
-    if(navigator.share){ await navigator.share({text}); }
-  }finally{
-    saveHistory(text);
+  const text = document.getElementById('out').value || '';
+  if (!text) {
+    showToast('共有する内容がありません');
+    return;
+  }
+  if (navigator.share) {
+    try {
+      await navigator.share({ text });
+      // 共有が成功した場合のみ履歴保存（アプリに合わせる）
+      saveHistory(text);
+      showToast('共有しました');
+    } catch (err) {
+      // ユーザーキャンセル/エラー時は履歴保存しない
+      // 必要ならキャンセルのトーストを表示:
+      // showToast('共有をキャンセルしました');
+    }
+  } else {
+    // フォールバック: コピー（共有相当の手段）
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      showToast('コピーしました');
+    } else {
+      const t = document.getElementById('out');
+      t.select();
+      document.execCommand('copy');
+      t.setSelectionRange(0, 0);
+      showToast('コピーしました');
+    }
   }
 }
+
 function saveHistory(text){
   const item={ id:crypto.randomUUID(), createdAt: Date.now(), text };
   const arr = JSON.parse(localStorage.getItem('summaryHistory')||'[]');
@@ -787,7 +814,7 @@ function clearHistory(){
   renderHistory();
 }
 function resetAll(){
-  current = 0; // ← 保険（必ず基本情報へ）
+  current = 0; // 基本情報へ
 
   // 初期化（新規評価）
   state = {
@@ -822,11 +849,9 @@ function resetAll(){
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
   
-  /* ----- 起動 ----- */
+/* ----- 起動 ----- */
 init();
 renderHistory();
-
-
 </script>
 </body>
 </html>
